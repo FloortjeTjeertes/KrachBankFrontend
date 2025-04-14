@@ -1,1 +1,2 @@
-### Fontend interfacxe for the krachbank api
+### Fontend interfac
+e for the krachbank api
