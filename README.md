@@ -1,4 +1,4 @@
 ### Fontend interface  
 the for the krachbank api
 
-[![pages-build-deployment](https://github.com/FloortjeTjeertes/KrachBankFrontend/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/FloortjeTjeertes/KrachBankFrontend/actions/workflows/pages/pages-build-deployment)
+[![Deploy to GitHub Pages](https://github.com/FloortjeTjeertes/KrachBankFrontend/actions/workflows/deploy.yml/badge.svg)](https://github.com/FloortjeTjeertes/KrachBankFrontend/actions/workflows/deploy.yml)
