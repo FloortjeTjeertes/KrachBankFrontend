@@ -30,5 +30,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: dist
-          publish_branch: Deploy  # Deploy to the gh-pages branch
+          publish_branch: siteDeploy  # Deploy to the gh-pages branch
           keep_files: false  # Overwrite the branch content
