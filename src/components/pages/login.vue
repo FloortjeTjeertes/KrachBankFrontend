@@ -1,39 +1,56 @@
 <template>
   <div class="login-page">
     <div class="left-section">
-      <img :src="backgroundImage" alt="Login Background" class="background-image" />
+      <img :src="backgroundImage" alt="Background Image" class="background-image" />
       <div class="overlay">
         <h1>KrachBank</h1>
         <p>Make everything possible with a little krach.</p>
       </div>
     </div>
     <div class="right-section">
-      <LoginForm />
+      <LoginForm v-if="showLogin" @login-submitted="handleLogin" @switch-to-signup="showLogin = false" />
+      <SignUpForm v-else @signup-submitted="handleSignup" @switch-to-login="showLogin = true" />
     </div>
   </div>
 </template>
 
 <script>
 import LoginForm from '../common/loginForm.vue';
-// Import the image using the alias '@' which points to your 'src' directory
+import SignUpForm from '../common/signUpForm.vue';
+// Assuming your image is at src/assets/bluetrump.png
 import blueTrumpBackground from '@/assets/bluetrump.png';
 
 export default {
   name: 'LoginPage',
   components: {
     LoginForm,
+    SignUpForm,
   },
   data() {
     return {
-      // Assign the imported image to your data property
+      showLogin: true, // true to show login form by default, false for signup
       backgroundImage: blueTrumpBackground,
     };
+  },
+  methods: {
+    handleLogin(formData) {
+      console.log('Login data received in LoginPage:', formData);
+      // Implement your actual login API call here
+      // e.g., axios.post('/api/login', formData)
+    },
+    handleSignup(formData) {
+      console.log('Sign-up data received in LoginPage:', formData);
+      // Implement your actual signup API call here
+      // e.g., axios.post('/api/register', formData)
+      // After successful signup, you might want to automatically switch back to the login form:
+      // this.showLogin = true;
+    },
   },
 };
 </script>
 
 <style scoped>
-/* Your CSS styles here */
+/* These styles remain the same as your previous `Login.vue` for the overall layout */
 .login-page {
   display: flex;
   height: 100vh;

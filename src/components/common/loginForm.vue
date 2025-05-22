@@ -17,7 +17,7 @@
       <button type="submit" class="login-button">Login</button>
     </form>
     <p class="signup-link">
-      <a href="#">Sign up</a>
+      Don't have an account? <a href="#" @click.prevent="$emit('switch-to-signup')">Sign up</a>
     </p>
   </div>
 </template>
