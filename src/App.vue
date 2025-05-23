@@ -15,6 +15,9 @@ import { RouterView, RouterLink } from "vue-router";
         <li>
           <RouterLink to="/api-test">API Test</RouterLink>
         </li>
+        <li>
+          <RouterLink to="/admin">Admin</RouterLink>
+        </li>
       </ul>
     </nav>
     <RouterView></RouterView>
