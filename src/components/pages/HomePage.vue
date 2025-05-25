@@ -1,7 +1,7 @@
 <script setup>
-import AboutBill from "../common/AboutBill.vue";
+import Overview from "../common/AccountOverview.vue";
 </script>
 
 <template>
-  <AboutBill />
+  <Overview />
 </template>

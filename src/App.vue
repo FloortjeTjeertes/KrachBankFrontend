@@ -6,7 +6,7 @@ import { RouterView, RouterLink } from "vue-router";
   <main class="container">
     <nav>
       <ul>
-        <li><strong>Bill's Bank and Used Car Sales</strong></li>
+        <li><strong>Krach Bank</strong></li>
       </ul>
       <ul>
         <li>
