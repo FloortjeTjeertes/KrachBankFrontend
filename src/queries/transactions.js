@@ -1,3 +1,5 @@
+import api from "axios";	
+
 // Fetch all transactions
 export const fetchTransactions = async () => {
     const response = await api.get("/transactions");
