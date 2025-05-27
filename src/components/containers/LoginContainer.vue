@@ -8,8 +8,10 @@
       </div>
     </div>
     <div class="right-section">
-      <LoginForm v-if="showLogin" @login-submitted="handleLogin" @switch-to-signup="showLogin = false" />
-      <SignUpForm v-else @signup-submitted="handleSignup" @switch-to-login="showLogin = true" />
+      <article class="pico-form-card">
+        <LoginForm v-if="showLogin" @login-submitted="handleLogin" @switch-to-signup="showLogin = false" />
+        <SignUpForm v-else @signup-submitted="handleSignup" @switch-to-login="showLogin = true" />
+      </article>
     </div>
   </div>
 </template>
@@ -17,44 +19,39 @@
 <script>
 import LoginForm from '../common/LoginForm.vue';
 import SignUpForm from '../common/SignUpForm.vue';
-// Assuming your image is at src/assets/bluetrump.png
 import blueTrumpBackground from '@/assets/bluetrump.png'; 
 
 export default {
-  name: 'LoginPage',
+  name: 'LoginContainer',
   components: {
     LoginForm,
     SignUpForm,
   },
   data() {
     return {
-      showLogin: true, // true to show login form by default, false for signup
+      showLogin: true,
       backgroundImage: blueTrumpBackground,
     };
   },
   methods: {
     handleLogin(formData) {
-      console.log('Login data received in LoginPage:', formData);
+      console.log('Login data received in LoginContainer:', formData);
       // Implement your actual login API call here
-      // e.g., axios.post('/api/login', formData)
     },
     handleSignup(formData) {
-      console.log('Sign-up data received in LoginPage:', formData);
+      console.log('Sign-up data received in LoginContainer:', formData);
       // Implement your actual signup API call here
-      // e.g., axios.post('/api/register', formData)
-      // After successful signup, you might want to automatically switch back to the login form:
-      // this.showLogin = true;
     },
   },
 };
 </script>
 
 <style scoped>
-/* These styles remain the same as your previous `Login.vue` for the overall layout */
+/* These styles remain for the overall layout, Pico doesn't dictate flexbox on this scale */
 .login-page {
   display: flex;
   height: 100vh;
-  font-family: sans-serif;
+  font-family: sans-serif; /* Keep your font if desired, or let Pico's default apply */
 }
 
 .left-section {
@@ -107,6 +104,14 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f0f2f5;
+  background-color: var(--pico-background-color); /* Use Pico's background color variable */
+}
+
+/* Custom width for the form card to match previous design */
+.pico-form-card {
+  width: 350px;
+  max-width: 90%; /* Responsive fallback */
+  padding: 40px; /* Adjust padding if Pico's default article padding isn't enough */
+  /* Pico's article already has background, border-radius, and box-shadow */
 }
 </style>

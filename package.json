@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@picocss/pico": "^2.1.1",
     "@tanstack/vue-query": "^5.74.2",
     "esbuild": "^0.25.4",
     "pinia": "^3.0.2",

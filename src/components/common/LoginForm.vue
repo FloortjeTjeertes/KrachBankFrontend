@@ -1,20 +1,19 @@
 <template>
-  <div class="login-card">
+  <div>
     <h2>Login</h2>
     <form @submit.prevent="submitLogin">
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" v-model="email" placeholder="Enter your email" required />
-      </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" v-model="password" placeholder="Enter your password" required />
-      </div>
-      <div class="form-group checkbox-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" v-model="email" placeholder="Enter your email" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" v-model="password" placeholder="Enter your password" required />
+
+      <label for="rememberMe">
         <input type="checkbox" id="rememberMe" v-model="rememberMe" />
-        <label for="rememberMe">Remember Me</label>
-      </div>
-      <button type="submit" class="login-button">Login</button>
+        Remember Me
+      </label>
+
+      <button type="submit">Login</button>
     </form>
     <p class="signup-link">
       Don't have an account? <a href="#" @click.prevent="$emit('switch-to-signup')">Sign up</a>
@@ -25,7 +24,7 @@
 <script>
 export default {
   name: 'LoginForm',
-  emits: ['login-submitted', 'switch-to-signup'], // Declare emitted events for Vue 3 (good practice)
+  emits: ['login-submitted', 'switch-to-signup'],
   data() {
     return {
       email: '',
@@ -51,27 +50,30 @@ export default {
 </script>
 
 <style scoped>
-/* (Your existing LoginForm styles remain the same) */
-.login-card {
-  background-color: white;
-  padding: 40px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 350px;
-  text-align: center;
+/* Remove styles that Pico handles (background, border, padding, shadow, input widths, etc.) */
+/* Keep styles for specific layout adjustments or link styling */
+h2 {
+  margin-bottom: 1rem; /* Adjust if Pico's h2 margin is different than desired */
+}
+
+/* Pico's label for checkboxes works slightly differently, no custom styling needed for alignment */
+label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Space between checkbox and text */
 }
 
 .signup-link {
-  margin-top: 25px;
+  margin-top: 1.5rem; /* Adjust spacing as needed */
+  text-align: center;
   font-size: 0.9em;
 }
 .signup-link a {
-  color: #007bff;
+  color: var(--pico-primary); /* Use Pico's primary color variable for links */
   text-decoration: none;
-  cursor: pointer; /* Makes it clear it's clickable */
+  cursor: pointer;
 }
 .signup-link a:hover {
   text-decoration: underline;
 }
-/* ... other LoginForm styles ... */
 </style>
