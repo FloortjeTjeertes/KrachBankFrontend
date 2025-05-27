@@ -5,10 +5,16 @@
         </section>
         <section class="maincontent col-xs-12  col-md">
             <h2>Overview</h2>
+
             <ActionMenu @filter="handleFilter" class="box" />
-            <BankAccount v-for="account in bankAccounts" :key="account.id" :bankAccount="account" class="box" />
+            <template v-if="bankAccounts.length === 0">
+                <p>No bank accounts found.</p>
+            </template>
+            <template v-else>
+                <BankAccount v-for="account in bankAccounts" :key="account.id" :bankAccount="account" class="box" />
+            </template>
             <!-- TODO: make pagination -->
-           
+
 
         </section>
 
@@ -44,7 +50,7 @@ const bankAccounts = ref([
 ]);
 // Accounts =  createAccount();
 onMounted(() => {
-    getAccounts(useUserStore.$id).then(accounts => {
+    getAccounts(useUserStore.userId).then(accounts => {
         if (accounts && accounts.length > 0) {
 
             accounts = accounts.map(account => mapToAccount(account));
@@ -57,12 +63,12 @@ onMounted(() => {
     });
 });
 
-async function getAccounts(userId,filter = null) {
+async function getAccounts(userId, filter = null) {
     if (!userId) {
         console.warn("No userId provided, returning empty array");
         return [];
     }
-    
+
     try {
         const response = await accounts.fetchAccountsForUser(userId, filter);
         if (!response || response.length === 0) {
@@ -78,8 +84,8 @@ async function getAccounts(userId,filter = null) {
             return { ...account, owner };
         }));
 
-        
-      
+
+
 
         return fullAccounts;
     } catch (error) {
@@ -104,18 +110,19 @@ async function getUserById(accountId) {
 
 }
 
-function mapToAccount(apiObject){
+function mapToAccount(apiObject) {
     if (!apiObject) {
         console.warn("No API object provided, returning null");
         return null;
     }
+    if (!apiObject.name || !apiObject.owner || !apiObject.balance || !apiObject.IBAN || !apiObject.absoluteLimit || !apiObject.type) {
+        console.warn("Incomplete API object, returning null");
+        return null;
+    }
     return {
-        id: apiObject.id,
-        name: apiObject.name,
         owner: apiObject.owner,
         balance: apiObject.balance,
         IBAN: apiObject.IBAN,
-        createdAt: apiObject.createdAt ? new Date(apiObject.createdAt).toISOString(): null ,
         absoluteLimit: apiObject.absoluteLimit,
         type: AccountTypes[apiObject.type.toUpperCase()] || AccountTypes.CHECKING
     };
@@ -124,14 +131,17 @@ function mapToAccount(apiObject){
 function handleFilter(filterData) {
     getAccounts(1, filterData).then(accounts => {
         if (accounts && accounts.length > 0) {
-            bankAccounts.value = accounts;
+            console.log("Filtered accounts:", accounts.value);
+            bankAccounts.value = accounts.value;
+
+            // bankAccounts.value = accounts.map(account => mapToAccount(account));
         } else {
             console.warn("No accounts found or error fetching accounts with filter.");
         }
     }).catch(error => {
         console.error("Error during account fetch with filter:", error);
     });
-    
+
 }
 
 </script>

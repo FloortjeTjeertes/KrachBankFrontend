@@ -27,8 +27,8 @@ defineProps({
 <template>
     <article class="bank-account">
         <header class=" bank-header">
-            <img :src="bankAccount.type.img" alt="Bank Account Icon" class="bank-icon" />
-            <h3>{{ bankAccount.type.name }} account</h3>
+            <img :src="bankAccount.type.img" alt="Icon" class="bank-icon" />
+            <h4>{{ bankAccount.type.name }} account</h4>
             <!-- <h4>{{ bankAccount.name }}</h4> -->
         </header>
         <section class="row">
