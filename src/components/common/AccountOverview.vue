@@ -1,7 +1,7 @@
 <template>
     <div class="row">
         <section class="sideBar col-xs-12 col-md-2 ">
-            <OverviewMenu />
+            <OverviewMenu @change="changeMenu" />
         </section>
         <section class="maincontent col-xs-12  col-md">
             <h2>Overview</h2>
@@ -62,6 +62,7 @@ onMounted(() => {
         console.error("Error during account fetch:", error);
     });
 });
+
 
 async function getAccounts(userId, filter = null) {
     if (!userId) {
@@ -144,6 +145,10 @@ function handleFilter(filterData) {
 
 }
 
+function changeMenu(menu){
+    console.log("Change menu to:", menu);
+    // Implement menu change logic here
+}
 </script>
 
 
