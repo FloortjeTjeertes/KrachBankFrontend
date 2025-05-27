@@ -1,4 +1,5 @@
 <script setup>
+const emit  = defineEmits(['change']);
 
 </script>
 
@@ -8,8 +9,8 @@
             <h4>Account Overview</h4>
         </header>
         <ul>
-            <li><a href="/transactions">Transactions</a></li>
-            <li><a href="/iban">Find IBAN</a></li>
+            <li><p @click="emit('change', 'transactions')">Transactions</p></li>
+            <li><p @click="emit('change', 'find-iban')">Find IBAN</p></li>
         </ul>
       
     </article>

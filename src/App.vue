@@ -12,9 +12,7 @@ import { RouterView, RouterLink } from "vue-router";
         <li>
           <RouterLink to="/">Home</RouterLink>
         </li>
-        <li>
-          <RouterLink to="/api-test">API Test</RouterLink>
-        </li>
+        
         <li>
           <RouterLink to="/admin">Admin</RouterLink>
         </li>
