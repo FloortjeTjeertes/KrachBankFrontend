@@ -6,9 +6,16 @@ export const fetchUsers = async () => {
 
 // create a new user
 export const createUser = async (userData) => {
+    console.log("Creating user with data:", userData);
     const response = await api.post("/users", userData);
     return response.data;
   };
+
+export const login = async (credentials) => {
+  console.log("Logging in with credentials:", credentials);
+  const response = await api.post('/auth/login', credentials);
+  return response.data;
+};
   
 
 // fetch a single user by ID

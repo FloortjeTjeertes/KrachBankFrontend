@@ -22,13 +22,17 @@
 
       <button type="submit">Sign up</button>
     </form>
+
     <p class="login-link">
-      Already have an account? <a href="#" @click.prevent="$emit('switch-to-login')">Log in</a>
+      Already have an account?
+      <a href="#" @click.prevent="$emit('switch-to-login')">Log in</a>
     </p>
   </div>
 </template>
 
 <script>
+import { createUser } from '@/queries/users';
+
 export default {
   name: 'SignUpForm',
   emits: ['signup-submitted', 'switch-to-login'],
@@ -43,23 +47,25 @@ export default {
     };
   },
   methods: {
-    submitSignup() {
-      console.log('Sign-up form submitted:', {
+    async submitSignup() {
+      const userData = {
         firstName: this.firstName,
         lastName: this.lastName,
         email: this.email,
         bsn: this.bsn,
         password: this.password,
         phoneNumber: this.phoneNumber,
-      });
-      this.$emit('signup-submitted', {
-        firstName: this.firstName,
-        lastName: this.lastName,
-        email: this.email,
-        bsn: this.bsn,
-        password: this.password,
-        phoneNumber: this.phoneNumber,
-      });
+      };
+
+      try {
+        const createdUser = await createUser(userData);
+        console.log('Signup successful:', createdUser);
+        this.$emit('signup-submitted', createdUser);
+      } catch (error) {
+        const message =
+          error.response?.data?.message || error.message || 'Signup failed';
+        alert(message);
+      }
     },
   },
 };

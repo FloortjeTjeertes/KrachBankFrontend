@@ -22,6 +22,8 @@
 </template>
 
 <script>
+import { login } from '@/queries/users';
+
 export default {
   name: 'LoginForm',
   emits: ['login-submitted', 'switch-to-signup'],
@@ -33,17 +35,27 @@ export default {
     };
   },
   methods: {
-    submitLogin() {
-      console.log('Login form submitted:', {
-        email: this.email,
-        password: this.password,
-        rememberMe: this.rememberMe,
-      });
-      this.$emit('login-submitted', {
-        email: this.email,
-        password: this.password,
-        rememberMe: this.rememberMe,
-      });
+    async submitLogin() {
+      try {
+        const response = await login({
+          email: this.email,
+          password: this.password,
+        });
+
+        console.log('Login successful:', response);
+
+        // Optionally store token
+        if (this.rememberMe) {
+          localStorage.setItem('token', response.token);
+        } else {
+          sessionStorage.setItem('token', response.token);
+        }
+
+        this.$emit('login-submitted', response);
+      } catch (error) {
+        const msg = error.response?.data?.message || 'Login failed';
+        alert(msg);
+      }
     },
   },
 };
