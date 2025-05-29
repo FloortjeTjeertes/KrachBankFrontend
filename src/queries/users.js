@@ -1,4 +1,4 @@
-import api from 'axios';
+import api from './axios';
 // fetch all users
 export const fetchUsers = async () => {
     const response = await api.get("/users");
@@ -8,7 +8,7 @@ export const fetchUsers = async () => {
 // create a new user
 export const createUser = async (userData) => {
     console.log("Creating user with data:", userData);
-    const response = await api.post("/users", userData);
+    const response = await api.post("/auth/register", userData);
     return response.data;
   };
 

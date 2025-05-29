@@ -103,6 +103,7 @@ export default {
           error.response?.data?.message || "Signup failed. Please try again.";
       }
     },
+
   },
 };
 </script>

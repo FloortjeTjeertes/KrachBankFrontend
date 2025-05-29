@@ -2,8 +2,8 @@
   <div>
     <h2>Login</h2>
     <form @submit.prevent="submitLogin">
-      <label for="email">Email</label>
-      <input type="email" id="email" v-model="email" placeholder="Enter your email" required />
+      <label for="username">Username</label>
+      <input type="text" id="username" v-model="username" placeholder="Enter your username" required />
 
       <label for="password">Password</label>
       <input type="password" id="password" v-model="password" placeholder="Enter your password" required />
@@ -29,7 +29,7 @@ export default {
   emits: ['login-submitted', 'switch-to-signup'],
   data() {
     return {
-      email: '',
+      username: '',
       password: '',
       rememberMe: false,
     };
@@ -38,23 +38,37 @@ export default {
     async submitLogin() {
       try {
         const response = await login({
-          email: this.email,
+          username: this.username,
           password: this.password,
         });
 
+        console.log('Full login response object from login function:', response); // Keep this for debugging
         console.log('Login successful:', response);
 
-        // Optionally store token
+        // --- ADJUSTED ACCESS TO RESPONSE PROPERTIES ---
+        const token = response.token; // Access 'token' instead of 'jwtToken'
+        const isUserVerified = response.userDetails.verified; // Access 'userDetails.verified'
+        // --- END ADJUSTED ACCESS ---
+
+        // Store token
         if (this.rememberMe) {
-          localStorage.setItem('token', response.token);
+          localStorage.setItem('token', token);
         } else {
-          sessionStorage.setItem('token', response.token);
+          sessionStorage.setItem('token', token);
+        }
+
+        if (isUserVerified) {
+          this.$router.push('/dummy');
+        } else {
+          this.$router.push('/notverified');
         }
 
         this.$emit('login-submitted', response);
+
       } catch (error) {
         const msg = error.response?.data?.message || 'Login failed';
         alert(msg);
+        console.error('Login error:', error);
       }
     },
   },
@@ -62,26 +76,22 @@ export default {
 </script>
 
 <style scoped>
-/* Remove styles that Pico handles (background, border, padding, shadow, input widths, etc.) */
-/* Keep styles for specific layout adjustments or link styling */
+/* Your existing styles */
 h2 {
-  margin-bottom: 1rem; /* Adjust if Pico's h2 margin is different than desired */
+  margin-bottom: 1rem;
 }
-
-/* Pico's label for checkboxes works slightly differently, no custom styling needed for alignment */
 label:has(input[type="checkbox"]) {
   display: flex;
   align-items: center;
-  gap: 0.5rem; /* Space between checkbox and text */
+  gap: 0.5rem;
 }
-
 .signup-link {
-  margin-top: 1.5rem; /* Adjust spacing as needed */
+  margin-top: 1.5rem;
   text-align: center;
   font-size: 0.9em;
 }
 .signup-link a {
-  color: var(--pico-primary); /* Use Pico's primary color variable for links */
+  color: var(--pico-primary);
   text-decoration: none;
   cursor: pointer;
 }
