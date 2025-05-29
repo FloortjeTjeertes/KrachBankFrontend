@@ -49,7 +49,7 @@ defineProps({
 
 <style lang="css" scoped>
 .bank-account {
-  width: 50%;
+  width: 100%;
 }
 
 .bank-icon {

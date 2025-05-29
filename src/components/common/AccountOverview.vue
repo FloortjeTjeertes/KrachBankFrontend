@@ -1,36 +1,32 @@
 <template>
-    <div class="row">
-        <section class="sideBar col-xs-12 col-md-2 ">
-            <OverviewMenu @change="changeMenu" />
-        </section>
-        <section class="maincontent col-xs-12  col-md">
-            <h2>Overview</h2>
 
-            <ActionMenu @filter="handleFilter" class="box" />
-            <template v-if="bankAccounts.length === 0">
-                <p>No bank accounts found.</p>
-            </template>
-            <template v-else>
-                <BankAccount v-for="account in bankAccounts" :key="account.id" :bankAccount="account" class="box" />
-            </template>
-            <!-- TODO: make pagination -->
+    <h2>Overview</h2>
+
+    <ActionMenu @filter="handleFilter" class="box" />
+    <section v-if="bankAccounts.length === 0">
+        <p>No bank accounts found.</p>
+    </section>
+    <section class="accountList"  v-else>
+        <BankAccount @click="handleClick(account)" v-for="account in bankAccounts" :key="account" :bankAccount="account"
+            class="box" />
+    </section>
+    <!-- TODO: make pagination -->
 
 
-        </section>
 
-    </div>
 </template>
 <script setup>
 import ActionMenu from "../menus/ActionMenu.vue";
-import OverviewMenu from "../menus/OverViewMenu.vue";
 import BankAccount from "../common/BankAccount.vue";
 import accounts from "../../queries/accounts";
 import users from "../../queries/users";
-import AccountTypes from '../../models/accountTypes';
 
 import { ref, onMounted } from "vue";
 import { useUserStore } from '../../stores/userStore';
-
+import { useToast } from "vue-toastification";
+import { mapToAccount } from '../../utils/mappers.js';
+import { useRouter } from "vue-router";
+const router = useRouter();
 // TODO: replace with real data from API
 const bankAccounts = ref([
     // {
@@ -48,24 +44,32 @@ const bankAccounts = ref([
     //     type: "checking",
     // }
 ]);
-// Accounts =  createAccount();
-onMounted(() => {
-    getAccounts(useUserStore.userId).then(accounts => {
-        if (accounts && accounts.length > 0) {
+const toast = useToast();
+const userStore = useUserStore();
+// const currentUser = userStore.getUser;
+const currentUser = 1;
 
-            accounts = accounts.map(account => mapToAccount(account));
-            bankAccounts.value = accounts;
-        } else {
+onMounted(() => {
+    // getAccounts(userStore.getUser.getId).then(accounts => {
+    getAccounts(currentUser).then(accounts => {
+
+
+        if (!accounts && accounts.length <= 0) {
+            toast.warning("No accounts found or error fetching accounts.");
             console.warn("No accounts found or error fetching accounts.");
+            return;
         }
+        bankAccounts.value = accounts.map(account => mapToAccount(account));
     }).catch(error => {
+        toast.error(error.message || "Error fetching accounts");
         console.error("Error during account fetch:", error);
     });
 });
 
 
 async function getAccounts(userId, filter = null) {
-    if (!userId) {
+    console.log("Fetching accounts for userId:", userId, "with filter:", filter);
+    if (userId == null || userId <= 0) {
         console.warn("No userId provided, returning empty array");
         return [];
     }
@@ -111,56 +115,48 @@ async function getUserById(accountId) {
 
 }
 
-function mapToAccount(apiObject) {
-    if (!apiObject) {
-        console.warn("No API object provided, returning null");
-        return null;
-    }
-    if (!apiObject.name || !apiObject.owner || !apiObject.balance || !apiObject.IBAN || !apiObject.absoluteLimit || !apiObject.type) {
-        console.warn("Incomplete API object, returning null");
-        return null;
-    }
-    return {
-        owner: apiObject.owner,
-        balance: apiObject.balance,
-        IBAN: apiObject.IBAN,
-        absoluteLimit: apiObject.absoluteLimit,
-        type: AccountTypes[apiObject.type.toUpperCase()] || AccountTypes.CHECKING
-    };
-}
+
 
 function handleFilter(filterData) {
     getAccounts(1, filterData).then(accounts => {
         if (accounts && accounts.length > 0) {
-            console.log("Filtered accounts:", accounts.value);
-            bankAccounts.value = accounts.value;
+            // bankAccounts.value = accounts.value;
 
-            // bankAccounts.value = accounts.map(account => mapToAccount(account));
+            bankAccounts.value = accounts.map(account => mapToAccount(account));
+            toast.success("Accounts fetched successfully with filter");
         } else {
             console.warn("No accounts found or error fetching accounts with filter.");
         }
     }).catch(error => {
+        toast.error(error.message || "Error fetching accounts with filter");
         console.error("Error during account fetch with filter:", error);
     });
 
 }
 
-function changeMenu(menu){
-    console.log("Change menu to:", menu);
-    // Implement menu change logic here
+function handleClick(account) {
+    console.log("Account clicked:", account);
+   router.push({
+        name: "AccountDetails",
+        params: { iban: account.IBAN }
+    });
 }
+
 </script>
 
 
 
 <style lang="css" scoped>
-/* .sideBar {
-    grid-column: 1;
-    grid-row: 1;
+.accountList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
-
-.maincontent {
-    grid-column: 2;
-    grid-row: 1;
-} */
+.bank-account{
+    width: 50%;
+}
+.bank-account:hover {
+    background-color: var(--pico-secondary-background);
+    cursor: pointer;
+}
 </style>
