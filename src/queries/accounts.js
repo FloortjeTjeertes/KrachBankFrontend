@@ -1,3 +1,4 @@
+import api from "../queries/axios"
 // fetch accounts
 export const fetchAccounts = async () => {
     const response = await api.get("/accounts");

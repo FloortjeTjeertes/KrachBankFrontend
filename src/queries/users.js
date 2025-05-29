@@ -1,3 +1,4 @@
+import api from "../queries/axios";
 // fetch all users
 export const fetchUsers = async () => {
     const response = await api.get("/users");
