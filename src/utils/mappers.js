@@ -41,19 +41,19 @@ export function mapToAccount(apiObject) {
     return null;
   }
   if (
-    !apiObject.owner ||
-    !apiObject.balance ||
-    !apiObject.IBAN ||
-    !apiObject.absoluteLimit ||
-    !apiObject.type
+      apiObject.owner === undefined ||
+    apiObject.balance === undefined ||
+    apiObject.iban === undefined ||
+    apiObject.absoluteLimit === undefined ||
+    apiObject.type === undefined
   ) {
-    console.warn("Incomplete API object, returning null");
+    throw Error("Incomplete API object, returning null");
     return null;
   }
   return {
     owner: apiObject.owner,
     balance: apiObject.balance,
-    IBAN: apiObject.IBAN,
+    IBAN: apiObject.iban,
     absoluteLimit: apiObject.absoluteLimit,
     type: AccountTypes[apiObject.type.toUpperCase()] || AccountTypes.CHECKING,
   };
