@@ -1,16 +1,10 @@
 import api from "../queries/axios";
-// fetch all users
-export const fetchUsers = async () => {
-    const response = await api.get("/users");
+// fetch all users, with optional filters as query params
+export const fetchUsers = async (filters = {}) => {
+    // filters is an object, e.g. { email: 'test@example.com', firstName: 'John' }
+    const response = await api.get("/users", { params: filters });
     return response.data;
   };
-
-// create a new user
-export const createUser = async (userData) => {
-    const response = await api.post("/users", userData);
-    return response.data;
-  };
-  
 
 // fetch a single user by ID
 export const fetchUserById = async (userId) => {

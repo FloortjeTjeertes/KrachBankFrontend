@@ -8,19 +8,22 @@
           <th>Phone number</th>
           <th>BSN</th>
           <th>Transfer Limit</th>
-          <th>Actions</th>
+          <th>Update</th>
+          <th>Delete</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="user in users" :key="user.id">
-          <td>{{ user.firstname }}</td>
-          <td>{{ user.lastname }}</td>
+          <td>{{ user.firstName }}</td>
+          <td>{{ user.lastName }}</td>
           <td>{{ user.email }}</td>
-          <td>{{ user.phonenumber }}</td>
-          <td>{{ user.bsn }}</td>
+          <td>{{ user.phoneNumber }}</td>
+          <td>{{ user.BSN }}</td>
           <td>{{ user.transferLimit }}</td>
           <td>
             <button @click="$emit('update', user)">Update</button>
+          </td>
+          <td>
             <button @click="$emit('delete', user)">Delete</button>
           </td>
         </tr>
@@ -37,4 +40,3 @@
   });
   defineEmits(["update", "delete"]);
   </script>
-  

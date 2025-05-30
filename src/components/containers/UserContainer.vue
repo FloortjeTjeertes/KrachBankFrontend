@@ -1,8 +1,9 @@
 <script setup>
 import Loading from "../common/Loading.vue";
 import UserCreateForm from "../common/UserCreateForm.vue";
-import UserUpdateForm from "../common/UserUpdateForm.vue";
-import { ref } from "vue";
+import UserUpdateForm from "../common/UserForm.vue";
+import UsersTable from "../common/UsersTable.vue";
+import { ref, watch } from "vue";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import {
   fetchUsers,
@@ -16,9 +17,22 @@ const showCreateForm = ref(false);
 const showUpdateForm = ref(false);
 const userToUpdate = ref(null);
 
+const filterText = ref("");
+const filterDebounced = ref("");
+
+// Debounce filterText to filterDebounced (simple debounce)
+let debounceTimeout;
+watch(filterText, (val) => {
+  clearTimeout(debounceTimeout);
+  debounceTimeout = setTimeout(() => {
+    filterDebounced.value = val;
+  }, 400);
+});
+
+// Use filterDebounced in the query
 const { isLoading, isError, data, error } = useQuery({
-  queryKey: ["users"],
-  queryFn: fetchUsers,
+  queryKey: ["users", filterDebounced],
+  queryFn: () => fetchUsers(filterDebounced.value ? { search: filterDebounced.value } : {}),
 });
 
 // Update user mutation
@@ -76,6 +90,18 @@ function onUpdateUserCancel() {
 
 <template>
   <button @click="onCreateUserClick">Create User</button>
+  <div style="margin: 1em 0;">
+    <label>
+      Filter users:
+      <textarea
+        v-model="filterText"
+        rows="2"
+        cols="40"
+        placeholder="Type to filter users by any field..."
+        :disabled="showCreateForm || showUpdateForm"
+      ></textarea>
+    </label>
+  </div>
   <UserCreateForm v-if="showCreateForm" @success="onCreateUserSuccess" @cancel="onCreateUserCancel" />
   <UserUpdateForm
     v-if="showUpdateForm"
@@ -85,12 +111,11 @@ function onUpdateUserCancel() {
   />
   <span v-if="isLoading"><Loading /></span>
   <span v-else-if="isError">Error: {{ error.message }}</span>
-  <ul v-else-if="data && data.length">
-    <li v-for="user in data" :key="user.id">
-      {{ user.name || (user.firstname + ' ' + user.lastname) }} ({{ user.email }})
-      <button @click="onUpdateUser(user)">Update</button>
-      <button @click="onDeleteUser(user)">Delete</button>
-    </li>
-  </ul>
-  <div v-else>No users found!</div>
+  <UsersTable
+    v-else-if="data && data.length && !showCreateForm && !showUpdateForm"
+    :users="data"
+    @update="onUpdateUser"
+    @delete="onDeleteUser"
+  />
+  <div v-else-if="!showCreateForm && !showUpdateForm">No users found!</div>
 </template>
