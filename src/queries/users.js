@@ -1,4 +1,5 @@
 import api from './axios';
+
 // fetch all users
 export const fetchUsers = async () => {
     const response = await api.get("/users");
@@ -42,3 +43,12 @@ export const verifyUser = async (userId) => {
     const response = await api.post(`/users/${userId}/verify`);
     return response.data;
   };
+
+export default {
+  fetchUsers,
+  createUser,
+  fetchUserById,
+  updateUser,
+  deleteUser,
+  verifyUser
+};

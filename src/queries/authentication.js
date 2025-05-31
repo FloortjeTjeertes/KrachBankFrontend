@@ -1,3 +1,6 @@
+
+import api from "axios";
+
 // fetch login details
 export const login = async () => {
     const response = await api.post("/authenticate/login");
