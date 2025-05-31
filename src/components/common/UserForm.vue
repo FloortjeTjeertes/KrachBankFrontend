@@ -24,7 +24,7 @@
       <label>Transfer Limit:</label>
       <input v-model="transferLimit" type="number" required />
     </div>
-    <button type="submit">{{ mode === 'create' ? 'Create' : 'Update' }}</button>
+    <button type="submit">{{ !isUpdate ? 'Create' : 'Update' }}</button>
     <button type="button" @click="handleCancel">Cancel</button>
   </form>
 </template>
@@ -62,11 +62,11 @@ watch(
   [user, isUpdate],
   ([val, currentMode]) => {
     if (currentMode && val) {
-      firstname.value = val.firstname || "";
-      lastname.value = val.lastname || "";
+      firstname.value = val.firstName || "";
+      lastname.value = val.lastName || "";
       email.value = val.email || "";
-      phonenumber.value = val.phonenumber || "";
-      bsn.value = val.bsn || "";
+      phonenumber.value = val.phoneNumber || "";
+      bsn.value = val.BSN || "";
       transferLimit.value = val.transferLimit || "";
     }
     if (!currentMode) {

@@ -15,13 +15,25 @@ const routes = [
     path: "/admin",
     component: AdminPage,
     children: [
-      { path: "", redirect: "admin/users"},
+      { path: "", redirect: "admin/users" },
       { path: "users", component: () => import("./components/containers/UserContainer.vue") },
+      {
+        path: "users/form",
+        component: () => import("./components/pages/FormPage.vue"),
+      },
+      {
+        path: "users/form/:id",
+        component: () => import("./components/pages/FormPage.vue"),
+        props: true,
+      },
       { path: "transactions", component: () => import("./components/containers/TransactionsContainer.vue") },
       { path: "accounts", component: () => import("./components/containers/AccountsContainer.vue") },
-      { path: "users/form/:id?", component: FormPage }, // for user form (create/update)
     ],
   },
+  {
+    path: "/form",
+    component: FormPage,
+  },  
   { path: "/login", component: LoginPage },
   { path: "/verified", component: VerifiedPage },
   { path: "/notverified", component: NotVerifiedPage }
