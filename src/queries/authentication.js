@@ -1,4 +1,6 @@
-import api from "../queries/axios";
+
+
+import api from "./axios";
 
 // fetch login details
 export const login = async () => {
