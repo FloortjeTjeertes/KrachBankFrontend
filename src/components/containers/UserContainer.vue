@@ -1,7 +1,5 @@
 <script setup>
 import Loading from "../common/Loading.vue";
-import UserCreateForm from "../common/UserCreateForm.vue";
-import UserUpdateForm from "../common/UserForm.vue";
 import UsersTable from "../common/UsersTable.vue";
 import VerificationTable from "../common/VerificationTable.vue";
 import { ref, watch } from "vue";
@@ -9,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { useRouter } from "vue-router";
 import {
   fetchUsers,
-  updateUser,
+  verifyUser,
   deleteUser,
   // You may want to implement/createUser in users.js if not present
 } from "../../queries/users.js";
@@ -43,11 +41,12 @@ const { isLoading, isError, data, error } = useQuery({
   queryFn: () => fetchUsers(filterDebounced.value ? { search: filterDebounced.value } : {}),
 });
 
-// Update user mutation
-const updateUserMutation = useMutation({
-  mutationFn: ({ userId, userData }) => updateUser(userId, userData),
+// Verify user mutation
+const verifyUserMutation = useMutation({
+  mutationFn: (user) => verifyUser(user.id, { verified: true }),
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ["users"] });
+    showVerificationTable.value = false; // Close the verification table
   },
 });
 
@@ -85,7 +84,6 @@ function onOpenVerificationTable() {
 function onVerifyUser(user) {
   // Here you would call your API/mutation to verify the user
   // For now, just close the table
-  showVerificationTable.value = false;
   // Optionally, you can add a mutation and invalidate queries here
   // queryClient.invalidateQueries({ queryKey: ["users"] });
 }
@@ -94,25 +92,6 @@ function onCloseVerificationTable() {
   showVerificationTable.value = false;
 }
 
-function onCreateUserSuccess() {
-  showCreateForm.value = false;
-  queryClient.invalidateQueries({ queryKey: ["users"] });
-}
-
-function onCreateUserCancel() {
-  showCreateForm.value = false;
-}
-
-function onUpdateUserSuccess() {
-  showUpdateForm.value = false;
-  userToUpdate.value = null;
-  queryClient.invalidateQueries({ queryKey: ["users"] });
-}
-
-function onUpdateUserCancel() {
-  showUpdateForm.value = false;
-  userToUpdate.value = null;
-}
 </script>
 
 <template>
