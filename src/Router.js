@@ -1,17 +1,19 @@
-import { createMemoryHistory, createRouter } from "vue-router";
+import { createWebHashHistory, createRouter } from "vue-router/auto-routes";
 
 import HomePage from "./components/pages/HomePage.vue";
-import ApiTestPage from "./components/pages/ApiTestPage.vue";
 import AdminPage from "./components/pages/AdminPage.vue";
+import AccountPage from "./components/pages/AccountPage.vue";
 
 const routes = [
-  { path: "/", component: HomePage },
-  { path: "/api-test", component: ApiTestPage },
-  { path: "/admin", component: AdminPage},
+  { path: "/",name:"Home", component: HomePage },
+  { path: "/admin", name:"Admin",component: AdminPage},
+  {path: "/account/:iban", name:"AccountDetails", component: AccountPage}   ,
+  { path: "/:pathMatch(.*)*", redirect: "/" }
+  // Redirect all nmatched routes to home
 ];
 
 const router = createRouter({
-  history: createMemoryHistory(),
+  history: createWebHashHistory(),
   routes,
 });
 
