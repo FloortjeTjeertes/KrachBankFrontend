@@ -1,3 +1,5 @@
+import api from './axios';
+
 // fetch all users
 export const fetchUsers = async () => {
     const response = await api.get("/users");
@@ -6,9 +8,16 @@ export const fetchUsers = async () => {
 
 // create a new user
 export const createUser = async (userData) => {
-    const response = await api.post("/users", userData);
+    console.log("Creating user with data:", userData);
+    const response = await api.post("/auth/register", userData);
     return response.data;
   };
+
+export const login = async (credentials) => {
+  console.log("Logging in with credentials:", credentials);
+  const response = await api.post('/auth/login', credentials);
+  return response.data;
+};
   
 
 // fetch a single user by ID
@@ -34,3 +43,12 @@ export const verifyUser = async (userId) => {
     const response = await api.post(`/users/${userId}/verify`);
     return response.data;
   };
+
+export default {
+  fetchUsers,
+  createUser,
+  fetchUserById,
+  updateUser,
+  deleteUser,
+  verifyUser
+};
