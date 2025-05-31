@@ -24,7 +24,7 @@
       <label>Transfer Limit:</label>
       <input v-model="transferLimit" type="number" required />
     </div>
-    <button type="submit">Update</button>
+    <button type="submit">{{ !isUpdate ? 'Create' : 'Update' }}</button>
     <button type="button" @click="handleCancel">Cancel</button>
   </form>
 </template>
@@ -32,17 +32,23 @@
 <script setup>
 import { ref, watch, toRefs } from "vue";
 import { useMutation } from "@tanstack/vue-query";
+import { register } from "../../queries/authentication";
 import { updateUser } from "../../queries/users";
 
 const props = defineProps({
   user: {
     type: Object,
-    required: true,
+    required: false,
+    default: () => ({}),
+  },
+  isUpdate: {
+    type: Boolean,
+    default: "true", // or "create"
   },
 });
 const emit = defineEmits(["success", "cancel"]);
 
-const { user } = toRefs(props);
+const { user, isUpdate } = toRefs(props);
 
 const firstname = ref("");
 const lastname = ref("");
@@ -51,21 +57,36 @@ const phonenumber = ref("");
 const bsn = ref("");
 const transferLimit = ref("");
 
-// Populate form when user prop changes
+// Populate form when user prop changes (only for update mode)
 watch(
-  user,
-  (val) => {
-    if (val) {
-      firstname.value = val.firstname || "";
-      lastname.value = val.lastname || "";
+  [user, isUpdate],
+  ([val, currentMode]) => {
+    if (currentMode && val) {
+      firstname.value = val.firstName || "";
+      lastname.value = val.lastName || "";
       email.value = val.email || "";
-      phonenumber.value = val.phonenumber || "";
-      bsn.value = val.bsn || "";
+      phonenumber.value = val.phoneNumber || "";
+      bsn.value = val.BSN || "";
       transferLimit.value = val.transferLimit || "";
+    }
+    if (!currentMode) {
+      firstname.value = "";
+      lastname.value = "";
+      email.value = "";
+      phonenumber.value = "";
+      bsn.value = "";
+      transferLimit.value = "";
     }
   },
   { immediate: true }
 );
+
+const createUserMutation = useMutation({
+  mutationFn: (userData) => register(userData),
+  onSuccess: () => {
+    emit("success");
+  },
+});
 
 const updateUserMutation = useMutation({
   mutationFn: ({ userId, userData }) => updateUser(userId, userData),
@@ -75,17 +96,22 @@ const updateUserMutation = useMutation({
 });
 
 function handleSubmit() {
-  updateUserMutation.mutate({
-    userId: user.value.id,
-    userData: {
-      firstname: firstname.value,
-      lastname: lastname.value,
-      email: email.value,
-      phonenumber: phonenumber.value,
-      bsn: bsn.value,
-      transferLimit: transferLimit.value,
-    },
-  });
+  const userData = {
+    firstname: firstname.value,
+    lastname: lastname.value,
+    email: email.value,
+    phonenumber: phonenumber.value,
+    bsn: bsn.value,
+    transferLimit: transferLimit.value,
+  };
+  if (!isUpdate.value) {
+    createUserMutation.mutate(userData);
+  } else {
+    updateUserMutation.mutate({
+      userId: user.value.id,
+      userData,
+    });
+  }
 }
 
 function handleCancel() {
