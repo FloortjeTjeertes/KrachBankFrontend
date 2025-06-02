@@ -16,7 +16,7 @@
 <script setup>
 import { ref } from "vue";
 import { useMutation } from "@tanstack/vue-query";
-import { createUser } from "../../queries/users";
+import { register } from "../../queries/authentication";
 
 const emit = defineEmits(["success", "cancel"]);
 
@@ -25,7 +25,7 @@ const email = ref("");
 
 // Create user mutation
 const createUserMutation = useMutation({
-  mutationFn: (userData) => createUser(userData),
+  mutationFn: (userData) => register(userData),
   onSuccess: () => {
     emit("success");
   },

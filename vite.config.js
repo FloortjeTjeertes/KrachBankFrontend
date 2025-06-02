@@ -1,8 +1,14 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+// vite.config.js
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import path from 'path'; // Make sure to import 'path'
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  base: '/KrachBankFrontend/',
   plugins: [vue()],
-})
+  resolve: {
+    alias: {
+      // This line defines the '@' alias to point to the 'src' directory
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+});
