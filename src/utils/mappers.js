@@ -48,7 +48,6 @@ export function mapToAccount(apiObject) {
     apiObject.type === undefined
   ) {
     throw Error("Incomplete API object, returning null");
-    return null;
   }
   return {
     owner: apiObject.owner,
