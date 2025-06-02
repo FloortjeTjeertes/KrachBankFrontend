@@ -7,6 +7,7 @@ import LoginPage from "./components/pages/LoginPage.vue";
 import VerifiedPage from "./components/pages/VerifiedPage.vue";
 import NotVerifiedPage from "./components/pages/NotVerifiedPage.vue";
 import AccountPage from "./components/pages/AccountPage.vue";
+import { createWebHistory } from "vue-router";
 
 const routes = [
 
@@ -33,7 +34,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes,
 });
 
