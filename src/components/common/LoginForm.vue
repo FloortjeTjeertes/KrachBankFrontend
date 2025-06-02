@@ -24,6 +24,8 @@
 <script>
 import { login } from '@/queries/users';
 import { useToast } from "vue-toastification";
+import { useUserStore } from '@/stores/UserStore';
+
 const toast = useToast();
 export default {
   name: 'LoginForm',
@@ -46,31 +48,45 @@ export default {
         console.log('Full login response object from login function:', response); // Keep this for debugging
         console.log('Login successful:', response);
         toast.success('Login successful!');
-        // --- ADJUSTED ACCESS TO RESPONSE PROPERTIES ---
-        const token = response.token; // Access 'token' instead of 'jwtToken'
-        const isUserVerified = response.userDetails.verified; // Access 'userDetails.verified'
-        // --- END ADJUSTED ACCESS ---
 
-        // Store token
-        if (this.rememberMe) {
-          localStorage.setItem('token', token);
-        } else {
-          sessionStorage.setItem('token', token);
-        }
+        // Move authentication logic to AuthenticateUser
+        this.AuthenticateUser(response);
+        let userStore = useUserStore();
 
-        if (isUserVerified) {
+
+        if (userStore.getUser.isVerified) {
           this.$router.push('/dummy');
         } else {
           this.$router.push('/notverified');
         }
-
         this.$emit('login-submitted', response);
 
       } catch (error) {
         const msg = error.response?.data?.message || 'Login failed';
-        toast.error(msg );
+        toast.error(msg);
         console.error('Login error:', error);
       }
+    },
+
+    AuthenticateUser(userResponse) {
+      // Use UserStore to store user info and token
+      const userStore = useUserStore();
+
+      const token = userResponse.token;
+      const userDetails = userResponse.userDetails;
+
+      userStore.setToken(token);
+      userStore.setUser(userDetails);
+
+      
+
+      // Store token
+      if (this.rememberMe) {
+        localStorage.setItem('token', token);
+      } else {
+        sessionStorage.setItem('token', token);
+      }
+
     },
   },
 };
@@ -81,21 +97,25 @@ export default {
 h2 {
   margin-bottom: 1rem;
 }
+
 label:has(input[type="checkbox"]) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
+
 .signup-link {
   margin-top: 1.5rem;
   text-align: center;
   font-size: 0.9em;
 }
+
 .signup-link a {
   color: var(--pico-primary);
   text-decoration: none;
   cursor: pointer;
 }
+
 .signup-link a:hover {
   text-decoration: underline;
 }
