@@ -71,6 +71,8 @@
 
 <script>
 import { createUser } from "@/queries/users";
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 export default {
   name: "SignUpForm",
@@ -101,6 +103,7 @@ export default {
         console.error("Signup failed:", error);
         this.errorMessage =
           error.response?.data?.message || "Signup failed. Please try again.";
+        toast.error(this.errorMessage);
       }
     },
 

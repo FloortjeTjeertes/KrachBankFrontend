@@ -23,7 +23,8 @@
 
 <script>
 import { login } from '@/queries/users';
-
+import { useToast } from "vue-toastification";
+const toast = useToast();
 export default {
   name: 'LoginForm',
   emits: ['login-submitted', 'switch-to-signup'],
@@ -44,7 +45,7 @@ export default {
 
         console.log('Full login response object from login function:', response); // Keep this for debugging
         console.log('Login successful:', response);
-
+        toast.success('Login successful!');
         // --- ADJUSTED ACCESS TO RESPONSE PROPERTIES ---
         const token = response.token; // Access 'token' instead of 'jwtToken'
         const isUserVerified = response.userDetails.verified; // Access 'userDetails.verified'
@@ -67,7 +68,7 @@ export default {
 
       } catch (error) {
         const msg = error.response?.data?.message || 'Login failed';
-        alert(msg);
+        toast.error(msg );
         console.error('Login error:', error);
       }
     },
