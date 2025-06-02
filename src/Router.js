@@ -3,6 +3,7 @@ import { createWebHashHistory, createRouter } from "vue-router/auto-routes";
 import HomePage from "./components/pages/HomePage.vue";
 import AdminPage from "./components/pages/AdminPage.vue";
 import AccountPage from "./components/pages/AccountPage.vue";
+import { createWebHistory } from "vue-router";
 
 const routes = [
   { path: "/",name:"Home", component: HomePage },
@@ -13,7 +14,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes,
 });
 
