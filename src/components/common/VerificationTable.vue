@@ -8,8 +8,7 @@
           <th>Phone number</th>
           <th>BSN</th>
           <th>Transfer Limit</th>
-          <th>Update</th>
-          <th>Delete</th>
+          <th>Verify</th>
         </tr>
       </thead>
       <tbody>
@@ -21,10 +20,7 @@
           <td>{{ user.BSN }}</td>
           <td>{{ user.transferLimit }}</td>
           <td>
-            <button @click="$emit('update', user)">Update</button>
-          </td>
-          <td>
-            <button @click="$emit('delete', user)">Delete</button>
+            <button @click="$emit('verify', user)">Verify</button>
           </td>
         </tr>
       </tbody>
@@ -38,5 +34,6 @@
       required: true,
     },
   });
-  defineEmits(["update", "delete"]);
+  // Only emit 'verify'
+  defineEmits(["verify"]);
   </script>

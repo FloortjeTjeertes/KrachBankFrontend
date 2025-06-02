@@ -1,12 +1,13 @@
 <script setup>
 import Loading from "../common/Loading.vue";
-import UserCreateForm from "../common/UserCreateForm.vue";
-import UserUpdateForm from "../common/UserUpdateForm.vue";
-import { ref } from "vue";
+import UsersTable from "../common/UsersTable.vue";
+import VerificationTable from "../common/VerificationTable.vue";
+import { ref, watch } from "vue";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { useRouter } from "vue-router";
 import {
   fetchUsers,
-  updateUser,
+  verifyUser,
   deleteUser,
   // You may want to implement/createUser in users.js if not present
 } from "../../queries/users.js";
@@ -16,16 +17,36 @@ const showCreateForm = ref(false);
 const showUpdateForm = ref(false);
 const userToUpdate = ref(null);
 
-const { isLoading, isError, data, error } = useQuery({
-  queryKey: ["users"],
-  queryFn: fetchUsers,
+// State for showing verification table instead of users table
+const showVerificationTable = ref(false);
+
+const filterText = ref("");
+const filterDebounced = ref("");
+
+// Add router instance
+const router = useRouter();
+
+// Debounce filterText to filterDebounced (simple debounce)
+let debounceTimeout;
+watch(filterText, (val) => {
+  clearTimeout(debounceTimeout);
+  debounceTimeout = setTimeout(() => {
+    filterDebounced.value = val;
+  }, 400);
 });
 
-// Update user mutation
-const updateUserMutation = useMutation({
-  mutationFn: ({ userId, userData }) => updateUser(userId, userData),
+// Use filterDebounced in the query
+const { isLoading, isError, data, error } = useQuery({
+  queryKey: ["users", filterDebounced],
+  queryFn: () => fetchUsers(filterDebounced.value ? { search: filterDebounced.value } : {}),
+});
+
+// Verify user mutation
+const verifyUserMutation = useMutation({
+  mutationFn: (user) => verifyUser(user.id, { verified: true }),
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ["users"] });
+    showVerificationTable.value = false; // Close the verification table
   },
 });
 
@@ -39,8 +60,8 @@ const deleteUserMutation = useMutation({
 
 // Example handlers
 function onUpdateUser(user) {
-  userToUpdate.value = { ...user };
-  showUpdateForm.value = true;
+  // Route to FormPage for update
+  router.push(`/admin/users/form/${user.id}`);
 }
 
 function onDeleteUser(user) {
@@ -49,48 +70,64 @@ function onDeleteUser(user) {
   }
 }
 
+// Route to FormPage for create
 function onCreateUserClick() {
-  showCreateForm.value = true;
+  router.push("/admin/users/form");
 }
 
-function onCreateUserSuccess() {
-  showCreateForm.value = false;
-  queryClient.invalidateQueries({ queryKey: ["users"] });
+// Handler to switch to verification table
+function onOpenVerificationTable() {
+  showVerificationTable.value = true;
 }
 
-function onCreateUserCancel() {
-  showCreateForm.value = false;
+// Handler for verifying a user
+function onVerifyUser(user) {
+  // Here you would call your API/mutation to verify the user
+  // For now, just close the table
+  // Optionally, you can add a mutation and invalidate queries here
+  // queryClient.invalidateQueries({ queryKey: ["users"] });
 }
 
-function onUpdateUserSuccess() {
-  showUpdateForm.value = false;
-  userToUpdate.value = null;
-  queryClient.invalidateQueries({ queryKey: ["users"] });
+function onCloseVerificationTable() {
+  showVerificationTable.value = false;
 }
 
-function onUpdateUserCancel() {
-  showUpdateForm.value = false;
-  userToUpdate.value = null;
-}
 </script>
 
 <template>
   <button @click="onCreateUserClick">Create User</button>
-  <UserCreateForm v-if="showCreateForm" @success="onCreateUserSuccess" @cancel="onCreateUserCancel" />
-  <UserUpdateForm
-    v-if="showUpdateForm"
-    :user="userToUpdate"
-    @success="onUpdateUserSuccess"
-    @cancel="onUpdateUserCancel"
-  />
+  <span style="display:inline-block;width:1em;"></span>
+  <button @click="onOpenVerificationTable" :disabled="showCreateForm || showUpdateForm || showVerificationTable">
+    Verify users
+  </button>
+  <div style="margin: 1em 0;">
+    <label>
+      Filter users:
+      <textarea
+        v-model="filterText"
+        rows="2"
+        cols="40"
+        placeholder="Type to filter users by any field..."
+        :disabled="showCreateForm || showUpdateForm || showVerificationTable"
+      ></textarea>
+    </label>
+  </div>
+  <!-- Remove inline forms, routing is now used -->
   <span v-if="isLoading"><Loading /></span>
   <span v-else-if="isError">Error: {{ error.message }}</span>
-  <ul v-else-if="data && data.length">
-    <li v-for="user in data" :key="user.id">
-      {{ user.name || (user.firstname + ' ' + user.lastname) }} ({{ user.email }})
-      <button @click="onUpdateUser(user)">Update</button>
-      <button @click="onDeleteUser(user)">Delete</button>
-    </li>
-  </ul>
-  <div v-else>No users found!</div>
+  <VerificationTable
+    v-else-if="showVerificationTable && data && data.length && !showCreateForm && !showUpdateForm"
+    :users="data"
+    @verify="onVerifyUser"
+  />
+  <div v-if="showVerificationTable && !showCreateForm && !showUpdateForm">
+    <button @click="onCloseVerificationTable" style="margin-top:1em;">Close Verification Table</button>
+  </div>
+  <UsersTable
+    v-else-if="data && data.length && !showCreateForm && !showUpdateForm && !showVerificationTable"
+    :users="data"
+    @update="onUpdateUser"
+    @delete="onDeleteUser"
+  />
+  <div v-else-if="!showCreateForm && !showUpdateForm && !showVerificationTable">No users found!</div>
 </template>

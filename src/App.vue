@@ -18,6 +18,9 @@ import { RouterView, RouterLink } from "vue-router";
         <li>
           <RouterLink to="/admin">Admin</RouterLink>
         </li>
+        <li>
+          <RouterLink to="/login">login</RouterLink>
+        </li>
       </ul>
     </nav>
     <RouterView></RouterView>
