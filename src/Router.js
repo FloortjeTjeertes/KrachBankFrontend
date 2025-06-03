@@ -7,6 +7,7 @@ import FormPage from "./components/pages/FormPage.vue";
 import LoginPage from "./components/pages/LoginPage.vue";
 import VerifiedPage from "./components/pages/VerifiedPage.vue";
 import NotVerifiedPage from "./components/pages/NotVerifiedPage.vue";
+import ATMPage from "./components/pages/ATMPage.vue";
 
 const routes = [
   { path: "/", component: HomePage },
@@ -36,7 +37,8 @@ const routes = [
   },  
   { path: "/login", component: LoginPage },
   { path: "/verified", component: VerifiedPage },
-  { path: "/notverified", component: NotVerifiedPage }
+  { path: "/notverified", component: NotVerifiedPage },
+  { path: "/atm", component: ATMPage },
 ];
 
 const router = createRouter({

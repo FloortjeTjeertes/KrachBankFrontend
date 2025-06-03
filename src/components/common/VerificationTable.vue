@@ -8,6 +8,7 @@
           <th>Phone number</th>
           <th>BSN</th>
           <th>Transfer Limit</th>
+          <th>Daily Limit</th>
           <th>Verify</th>
         </tr>
       </thead>
@@ -19,6 +20,7 @@
           <td>{{ user.phoneNumber }}</td>
           <td>{{ user.BSN }}</td>
           <td>{{ user.transferLimit }}</td>
+          <td>{{ user.dailyLimit ?? user.transferLimit }}</td>
           <td>
             <button @click="$emit('verify', user)">Verify</button>
           </td>

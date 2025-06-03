@@ -14,6 +14,7 @@
       </label>
 
       <button type="submit">Login</button>
+      <button type="button" style="margin-left: 1em;" @click="$emit('switch-to-atm')">Login to ATM</button>
     </form>
     <p class="signup-link">
       Don't have an account? <a href="#" @click.prevent="$emit('switch-to-signup')">Sign up</a>
@@ -26,7 +27,7 @@ import { login } from '@/queries/users';
 
 export default {
   name: 'LoginForm',
-  emits: ['login-submitted', 'switch-to-signup'],
+  emits: ['login-submitted', 'switch-to-signup', 'switch-to-atm'],
   data() {
     return {
       username: '',

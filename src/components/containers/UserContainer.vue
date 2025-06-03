@@ -60,8 +60,8 @@ const deleteUserMutation = useMutation({
 
 // Example handlers
 function onUpdateUser(user) {
-  // Route to FormPage for update
-  router.push(`/admin/users/form/${user.id}`);
+  // Route to FormPage for update using object syntax for dynamic params
+  router.push({ path: `/admin/users/form/${user.id}` });
 }
 
 function onDeleteUser(user) {
@@ -82,10 +82,8 @@ function onOpenVerificationTable() {
 
 // Handler for verifying a user
 function onVerifyUser(user) {
-  // Here you would call your API/mutation to verify the user
-  // For now, just close the table
-  // Optionally, you can add a mutation and invalidate queries here
-  // queryClient.invalidateQueries({ queryKey: ["users"] });
+  // Route to FormPage for update, with verify query param
+  router.push({ path: `/admin/users/form/${user.id}`, query: { verify: "1" } });
 }
 
 function onCloseVerificationTable() {

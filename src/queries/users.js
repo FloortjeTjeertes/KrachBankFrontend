@@ -7,6 +7,8 @@ export const fetchUsers = async () => {
 
 // create a new user
 export const createUser = async (userData) => {
+    // Ensure dailyLimit is set
+    if (!userData.dailyLimit) userData.dailyLimit = userData.transferLimit;
     console.log("Creating user with data:", userData);
     const response = await api.post("/auth/register", userData);
     return response.data;
@@ -27,6 +29,8 @@ export const fetchUserById = async (userId) => {
 
 // update a user
 export const updateUser = async (userId, userData) => {
+    // Ensure dailyLimit is set
+    if (!userData.dailyLimit) userData.dailyLimit = userData.transferLimit;
     const response = await api.put(`/users/${userId}`, userData);
     return response.data;
   };
