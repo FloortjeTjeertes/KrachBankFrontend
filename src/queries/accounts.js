@@ -28,10 +28,31 @@ export const fetchAccountsForUser = async (userId, filter) => {
   if (!filter) {
     filter = {};
   }
+  filter = filterIsValid(filter); // Validate the filter
   filter.userId = userId; // Ensure the filter includes the userId
-  const response = await api.get(`/users/${userId}/accounts`);
+  const response = await api.get(`/users/${userId}/accounts`,
+    {
+      params: filter, // Pass the filter as query parameters
+    }
+  );
   return response.data;
 };
+
+function filterIsValid(filter) {
+
+  if(!filter.Iban || typeof filter.Iban !== 'string') {
+   delete filter.Iban;
+  }
+  if(!filter.userId || typeof filter.userId !== 'int') {
+    delete filter.userId;
+  }
+  if(!filter.balance || typeof filter.balance !== 'number') {
+    delete filter.balance;
+  }
+  
+  return filter;
+}
+
 
 export default {
   fetchAccounts,
