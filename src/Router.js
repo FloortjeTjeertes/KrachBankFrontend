@@ -6,6 +6,7 @@ import FormPage from "./components/pages/FormPage.vue";
 import LoginPage from "./components/pages/LoginPage.vue";
 import VerifiedPage from "./components/pages/VerifiedPage.vue";
 import NotVerifiedPage from "./components/pages/NotVerifiedPage.vue";
+import ATMPage from "./components/pages/ATMPage.vue";
 import AccountPage from "./components/pages/AccountPage.vue";
 import { createWebHistory } from "vue-router";
 import { useUserStore } from "./stores/userStore"; // adjust path if needed
@@ -30,8 +31,8 @@ const routes = [
   { path: "/:pathMatch(.*)*", redirect: "/" },
   { path: "/login", component: LoginPage },
   { path: "/verified", component: VerifiedPage },
-  { path: "/notverified", component: NotVerifiedPage }
-  // Redirect all nmatched routes to home
+  { path: "/notverified", component: NotVerifiedPage },
+  { path: "/atm", component: ATMPage },
 ];
 
 const router = createRouter({
@@ -39,18 +40,18 @@ const router = createRouter({
   routes,
 });
 
-// router.beforeEach((to, from, next) => {
-//   const userStore = useUserStore();
-//   const isAuthenticated = !!userStore.getUser; // or your actual auth check
+router.beforeEach((to, from, next) => {
+  const userStore = useUserStore();
+  const isAuthenticated = !!userStore.getUser; // or your actual auth check
 
-//   // List of routes that do NOT require authentication
-//   const publicPages = ["/login", "/verified", "/notverified"];
-//   const authRequired = !publicPages.includes(to.path);
+  // List of routes that do NOT require authentication
+  const publicPages = ["/login", "/verified", "/notverified"];
+  const authRequired = !publicPages.includes(to.path);
 
-//   if (authRequired && !isAuthenticated) {
-//     return next("/login");
-//   }
-//   next();
-// });
+  if (authRequired && !isAuthenticated) {
+    return next("/login");
+  }
+  next();
+});
 
 export default router;

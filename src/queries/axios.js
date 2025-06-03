@@ -4,6 +4,12 @@ import axios from "axios";
 const api = axios.create({
   // baseURL: "https://virtserver.swaggerhub.com/floorje/Krachbank/1.0.0", // Change to your backend URL
   baseURL: "http://localhost:8080/api", // Change to your backend URL
+  // You can add headers or interceptors here if needed
+  headers: {
+    "Content-Type": "application/json",
+  },
+  //baseURL: "https://virtserver.swaggerhub.com/floorje/Krachbank/1.0.0", // Change to your backend URL
+  // baseURL: "http://localhost:8080", // Change to your backend URL
 
   // You can add headers or interceptors here if needed
 });
@@ -12,8 +18,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token")||sessionStorage.getItem("token");
-    console.log("Token:", token);
-    if (token) {
+    if (token && typeof token === "string" && token.trim().length > 0) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;

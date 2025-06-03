@@ -21,40 +21,24 @@ import BankAccount from "../common/BankAccount.vue";
 import accounts from "../../queries/accounts";
 import users from "../../queries/users";
 
-import { ref, onMounted } from "vue";
+import { ref, onMounted,toRaw } from "vue";
 import { useUserStore } from '../../stores/userStore';
 import { useToast } from "vue-toastification";
 import { mapToAccount } from '../../utils/mappers.js';
 import { useRouter } from "vue-router";
+
 const router = useRouter();
-// TODO: replace with real data from API
-const bankAccounts = ref([
-    // {
-    //     name: "placholder",
-    //     owner: {
-    //         id: 1,
-    //         name: "John Doe",
-    //         firstName: "John",
-    //         lastName: "Doe"
-    //     },
-    //     balance: 1500.00,
-    //     iban: "DE89370400440532013000"
-    //     createdAt: "2023-10-01T12:00:00Z",
-    //     absolutelimit: 10000.00,
-    //     type: "checking",
-    // }
-]);
 const toast = useToast();
 const userStore = useUserStore();
-console.log("User Store:", userStore);
-// const currentUser = userStore.getUser;
-const currentUser = 1;
+const bankAccounts = ref([]);
+
+//TODO: move this to the router
+
+const currentUser = userStore.getUser?.id;
 
 onMounted(() => {
-    // getAccounts(userStore.getUser.getId).then(accounts => {
+
     getAccounts(currentUser).then(accounts => {
-
-
         if (!accounts && accounts.length <= 0) {
             toast.warning("No accounts found or error fetching accounts.");
             console.warn("No accounts found or error fetching accounts.");
@@ -68,8 +52,8 @@ onMounted(() => {
 });
 
 
-async function getAccounts(userId, filter = null) {
-    console.log("Fetching accounts for userId:", userId, "with filter:", filter);
+async function getAccounts(userId, filter) {
+    console.log("getAccounts called with userId:", userId, "and filter:", filter);
     if (userId == null || userId <= 0) {
         console.warn("No userId provided, returning empty array");
         return [];
@@ -119,7 +103,10 @@ async function getUserById(accountId) {
 
 
 function handleFilter(filterData) {
-    getAccounts(1, filterData).then(accounts => {
+    console.log("Filter data received:", filterData);
+    let filter = toRaw(filterData) ;
+    console.log("Filter to be applied:", filter);
+    getAccounts(currentUser, filter).then(accounts => {
         if (accounts && accounts.length > 0) {
             // bankAccounts.value = accounts.value;
 
