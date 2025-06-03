@@ -8,6 +8,7 @@ import VerifiedPage from "./components/pages/VerifiedPage.vue";
 import NotVerifiedPage from "./components/pages/NotVerifiedPage.vue";
 import AccountPage from "./components/pages/AccountPage.vue";
 import { createWebHistory } from "vue-router";
+import { useUserStore } from "./stores/userStore"; // adjust path if needed
 
 const routes = [
 
@@ -37,5 +38,19 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
 });
+
+// router.beforeEach((to, from, next) => {
+//   const userStore = useUserStore();
+//   const isAuthenticated = !!userStore.getUser; // or your actual auth check
+
+//   // List of routes that do NOT require authentication
+//   const publicPages = ["/login", "/verified", "/notverified"];
+//   const authRequired = !publicPages.includes(to.path);
+
+//   if (authRequired && !isAuthenticated) {
+//     return next("/login");
+//   }
+//   next();
+// });
 
 export default router;
