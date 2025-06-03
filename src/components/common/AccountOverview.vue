@@ -46,6 +46,7 @@ const bankAccounts = ref([
 ]);
 const toast = useToast();
 const userStore = useUserStore();
+console.log("User Store:", userStore);
 // const currentUser = userStore.getUser;
 const currentUser = 1;
 

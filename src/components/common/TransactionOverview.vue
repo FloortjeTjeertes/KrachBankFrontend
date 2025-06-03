@@ -17,7 +17,7 @@ import { useRouter } from "vue-router";
 const toast = useToast();
 
 
-var accountId = useUserStore.getUser; // Default account ID, replace with actual logic to get current account ID
+var accountId = 1; // Default account ID, replace with actual logic to get current account ID
 
 let transactionList = ref([
     // {
