@@ -41,14 +41,13 @@ export function mapToAccount(apiObject) {
     return null;
   }
   if (
-      apiObject.owner === undefined ||
+    apiObject.owner === undefined ||
     apiObject.balance === undefined ||
     apiObject.iban === undefined ||
     apiObject.absoluteLimit === undefined ||
     apiObject.type === undefined
   ) {
     throw Error("Incomplete API object, returning null");
-    return null;
   }
   return {
     owner: apiObject.owner,
