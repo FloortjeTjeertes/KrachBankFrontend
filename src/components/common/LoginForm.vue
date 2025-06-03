@@ -26,6 +26,7 @@
       </label>
 
       <button type="submit">Login</button>
+      <button type="button" style="margin-left: 1em;" @click="$emit('switch-to-atm')">Login to ATM</button>
     </form>
     <p class="signup-link">
       Don't have an account?
@@ -37,7 +38,7 @@
 <script>
 import { login } from "@/queries/users";
 import { useToast } from "vue-toastification";
-import { useUserStore } from "@/stores/UserStore";
+import { useUserStore } from "@/stores/userStore"; // fixed casing
 
 
 
@@ -52,7 +53,7 @@ const toast = useToast();
 
 export default {
   name: "LoginForm",
-  emits: ["login-submitted", "switch-to-signup"],
+  emits: ["login-submitted", "switch-to-signup", "switch-to-atm"],
   data() {
     return {
       username: "",
@@ -62,31 +63,36 @@ export default {
   },
   methods: {
     async submitLogin() {
+      // Prevent empty username/password
+      if (!this.username || !this.password) {
+        toast.error("Username and password are required.");
+        return;
+      }
       try {
         const response = await login({
           username: this.username,
           password: this.password,
         });
 
-        console.log(
-          "Full login response object from login function:",
-          response
-        ); // Keep this for debugging
-        console.log("Login successful:", response);
-        toast.success("Login successful!");
+        // Only proceed if token is present
+        if (!response || !response.token) {
+          toast.error("Login failed: No token received.");
+          return;
+        }
 
-        // Move authentication logic to AuthenticateUser
+        toast.success("Login successful!");
         this.AuthenticateUser(response);
-        let userStore = useUserStore();
-        console.log("User details after login:", userStore.getUser.getUser);
-        if (userStore.getUser.verified) {
-          console.log("User is verified, redirecting to dummy page");
+        const userStore = useUserStore();
+        if (userStore.getUser?.verified) {
           this.$router.push("/dummy");
         } else {
           this.$router.push("/notverified");
         }
         this.$emit("login-submitted", response);
       } catch (error) {
+        // Avoid storing any token on error
+        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
         const msg = error.response?.data?.message || "Login failed";
         toast.error(msg);
         console.error("Login error:", error);
@@ -94,20 +100,19 @@ export default {
     },
 
     AuthenticateUser(userResponse) {
-      // Use UserStore to store user info and token
       const userStore = useUserStore();
-
       const token = userResponse.token;
       const userDetails = userResponse.userDetails;
 
       userStore.setUser(userDetails);
-      console.log("User details set in store:", userStore.getUser);
 
-      // Store token
-      if (this.rememberMe) {
-        localStorage.setItem("token", token);
-      } else {
-        sessionStorage.setItem("token", token);
+      // Store token only if present
+      if (token) {
+        if (this.rememberMe) {
+          localStorage.setItem("token", token);
+        } else {
+          sessionStorage.setItem("token", token);
+        }
       }
     },
   },
