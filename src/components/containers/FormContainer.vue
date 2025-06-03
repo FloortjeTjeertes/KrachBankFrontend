@@ -8,6 +8,7 @@ import router from '../../Router'
 
 const route = useRoute()
 const isUpdate = computed(() => !!route.params.id)
+const isVerifyMode = computed(() => route.query.verify === "1")
 
 const { isLoading, isError, data: user, error } = useQuery({
     queryKey: ['user', route.params.id],
@@ -33,6 +34,7 @@ function handleCancel() {
             v-if="!isUpdate || user"
             :user="user"
             :isUpdate="isUpdate"
+            :disableCancel="isVerifyMode"
             @success="handleSuccess"
             @cancel="handleCancel"
         />

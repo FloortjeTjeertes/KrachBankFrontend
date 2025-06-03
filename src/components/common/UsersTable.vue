@@ -8,6 +8,7 @@
           <th>Phone number</th>
           <th>BSN</th>
           <th>Transfer Limit</th>
+          <th>Daily Limit</th>
           <th>Update</th>
           <th>Delete</th>
         </tr>
@@ -20,6 +21,7 @@
           <td>{{ user.phoneNumber }}</td>
           <td>{{ user.BSN }}</td>
           <td>{{ user.transferLimit }}</td>
+          <td>{{ user.dailyLimit ?? user.transferLimit }}</td>
           <td>
             <button @click="$emit('update', user)">Update</button>
           </td>

@@ -6,6 +6,7 @@ import FormPage from "./components/pages/FormPage.vue";
 import LoginPage from "./components/pages/LoginPage.vue";
 import VerifiedPage from "./components/pages/VerifiedPage.vue";
 import NotVerifiedPage from "./components/pages/NotVerifiedPage.vue";
+import ATMPage from "./components/pages/ATMPage.vue";
 import AccountPage from "./components/pages/AccountPage.vue";
 import { createWebHistory } from "vue-router";
 import { useUserStore } from "./stores/userStore"; // adjust path if needed]
@@ -36,10 +37,7 @@ const routes = [
   { path: "/verified", component: VerifiedPage },
   { path: "/notverified", component: NotVerifiedPage },
   { path: "/atm", component: atmPage },
-  { path: "/atmoverview", component: atmOverview }
-  
-  // Redirect all nmatched routes to home
-];
+  { path: "/atmoverview", component: atmOverview };
 
 const router = createRouter({
   history: createWebHistory(),

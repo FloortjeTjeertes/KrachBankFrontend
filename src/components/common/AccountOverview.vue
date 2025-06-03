@@ -46,8 +46,13 @@ const bankAccounts = ref([
 ]);
 const toast = useToast();
 const userStore = useUserStore();
-// const currentUser = userStore.getUser;
-const currentUser = 1;
+
+//TODO: move this to the router
+if(!userStore.isAuthenticated) {
+    console.warn("No user found in store, redirecting to login.");
+    router.push("/login" );
+}
+const currentUser = userStore.getUser?.id;
 
 onMounted(() => {
     // getAccounts(userStore.getUser.getId).then(accounts => {
@@ -68,7 +73,7 @@ onMounted(() => {
 
 
 async function getAccounts(userId, filter = null) {
-    console.log("Fetching accounts for userId:", userId, "with filter:", filter);
+    console.log("getAccounts called with userId:", userId, "and filter:", filter);
     if (userId == null || userId <= 0) {
         console.warn("No userId provided, returning empty array");
         return [];
@@ -118,7 +123,8 @@ async function getUserById(accountId) {
 
 
 function handleFilter(filterData) {
-    getAccounts(1, filterData).then(accounts => {
+    console.log("Filter data received:", filterData);
+    getAccounts(currentUser, filterData.value).then(accounts => {
         if (accounts && accounts.length > 0) {
             // bankAccounts.value = accounts.value;
 
