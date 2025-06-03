@@ -4,7 +4,7 @@
       <img :src="backgroundImage" alt="Background Image" class="background-image" />
       <div class="overlay">
         <h1>KrachBank</h1>
-        <p>Make everything possible with a little krach.</p>
+        <p>Your money is between somewhat and reasonably safe with us!</p>
       </div>
     </div>
     <div class="right-section">

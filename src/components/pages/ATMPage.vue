@@ -1,8 +1,8 @@
 <template>
-  <div>
-    <h2>Login</h2>
-    <form @submit.prevent="submitLogin">
-      <label for="username">Username</label>
+  <div class="atm-page">
+    <h1>ATM Page</h1>
+    <p>Please login</p>
+    <label for="username">Username</label>
       <input
         type="text"
         id="username"
@@ -18,22 +18,11 @@
         v-model="password"
         placeholder="Enter your password"
         required
-      />
-
-      <label for="rememberMe">
-        <input type="checkbox" id="rememberMe" v-model="rememberMe" />
-        Remember Me
-      </label>
-
-      <button type="submit">Login</button>
-    </form>
-    <p class="signup-link">
-      Don't have an account?
-      <a href="#" @click.prevent="$emit('switch-to-signup')">Sign up</a>
-    </p>
+      />    
+    <button @click="submitLogin">Login</button>
+    
   </div>
 </template>
-
 <script>
 import { login } from "@/queries/users";
 import { useToast } from "vue-toastification";
@@ -70,9 +59,9 @@ export default {
         let userStore = useUserStore();
 
         if (userStore.getUser.isVerified) {
-          this.$router.push("/");
+          this.$router.push("/atmoverview");
         } else {
-          this.$router.push("/notverified");
+          this.$router.push("/atmoverview");
         }
         this.$emit("login-submitted", response);
       } catch (error) {
@@ -100,33 +89,5 @@ export default {
     },
   },
 };
+
 </script>
-
-<style scoped>
-/* Your existing styles */
-h2 {
-  margin-bottom: 1rem;
-}
-
-label:has(input[type="checkbox"]) {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.signup-link {
-  margin-top: 1.5rem;
-  text-align: center;
-  font-size: 0.9em;
-}
-
-.signup-link a {
-  color: var(--pico-primary);
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.signup-link a:hover {
-  text-decoration: underline;
-}
-</style>

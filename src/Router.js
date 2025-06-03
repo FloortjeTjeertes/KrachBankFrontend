@@ -8,7 +8,9 @@ import VerifiedPage from "./components/pages/VerifiedPage.vue";
 import NotVerifiedPage from "./components/pages/NotVerifiedPage.vue";
 import AccountPage from "./components/pages/AccountPage.vue";
 import { createWebHistory } from "vue-router";
-import { useUserStore } from "./stores/userStore"; // adjust path if needed
+import { useUserStore } from "./stores/userStore"; // adjust path if needed]
+import atmPage from "./components/pages/ATMPage.vue";
+import atmOverview from "./components/pages/ATMOverview.vue";
 
 const routes = [
 
@@ -22,7 +24,9 @@ const routes = [
       {path: "users/form", component: () => import("./components/pages/FormPage.vue") },
       {path: "users/form/:id", component: () => import("./components/pages/FormPage.vue"), props: true },
       { path: "transactions", component: () => import("./components/containers/TransactionsContainer.vue") },
-      { path: "accounts", component: () => import("./components/containers/AccountsContainer.vue") }
+      { path: "accounts", component: () => import("./components/containers/AccountsContainer.vue") },
+      { path: "atm", component: () => import("./components/pages/ATMPage.vue") },
+      { path: "atmoverview", component: () => import("./components/pages/ATMOverview.vue") }
     ],
   },
   { path: "/form",component: FormPage},  
@@ -30,7 +34,10 @@ const routes = [
   { path: "/:pathMatch(.*)*", redirect: "/" },
   { path: "/login", component: LoginPage },
   { path: "/verified", component: VerifiedPage },
-  { path: "/notverified", component: NotVerifiedPage }
+  { path: "/notverified", component: NotVerifiedPage },
+  { path: "/atm", component: atmPage },
+  { path: "/atmoverview", component: atmOverview }
+  
   // Redirect all nmatched routes to home
 ];
 
