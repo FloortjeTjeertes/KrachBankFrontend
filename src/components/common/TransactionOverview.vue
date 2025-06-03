@@ -17,7 +17,7 @@ import { useRouter } from "vue-router";
 const toast = useToast();
 
 
-var accountId = useUserStore.getUser; // Default account ID, replace with actual logic to get current account ID
+var accountId = userStore.getUser?.id; // Default account ID, replace with actual logic to get current account ID
 
 let transactionList = ref([
     // {
@@ -35,6 +35,7 @@ let transactionList = ref([
 onMounted(() => {
     try {
         var user = getLoggedInUser(); // Ensure user is logged in before fetching transactions
+        console.log("Logged in user:", user);
         // Fetch transactions for the current user or a default user
         getTransactionsForUser(accountId).then(transactions => {
             if (!transaction || transaction.length <= 0) {
@@ -79,6 +80,7 @@ async function getTransactionsForUser(userId) {
 
 function getLoggedInUser() {
     const userStore = useUserStore();
+    console.log("User store:", userStore.get);
     const router = useRouter();
 
     try {

@@ -68,8 +68,9 @@ export default {
         // Move authentication logic to AuthenticateUser
         this.AuthenticateUser(response);
         let userStore = useUserStore();
-
-        if (userStore.getUser.isVerified) {
+        console.log("User details after login:", userStore.getUser.getUser);
+        if (userStore.getUser.verified) {
+          console.log("User is verified, redirecting to dummy page");
           this.$router.push("/dummy");
         } else {
           this.$router.push("/notverified");
@@ -90,6 +91,7 @@ export default {
       const userDetails = userResponse.userDetails;
 
       userStore.setUser(userDetails);
+      console.log("User details set in store:", userStore.getUser);
 
       // Store token
       if (this.rememberMe) {
