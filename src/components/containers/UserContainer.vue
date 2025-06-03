@@ -9,87 +9,74 @@ import {
   fetchUsers,
   verifyUser,
   deleteUser,
-  // You may want to implement/createUser in users.js if not present
 } from "../../queries/users.js";
 
 const queryClient = useQueryClient();
 const showCreateForm = ref(false);
 const showUpdateForm = ref(false);
 const userToUpdate = ref(null);
-
-// State for showing verification table instead of users table
 const showVerificationTable = ref(false);
 
-const filterText = ref("");
-const filterDebounced = ref("");
+// --- Filter state ---
+const filterKey = ref("email");
+const filterValue = ref("");
+const filterDebouncedKey = ref("email");
+const filterDebouncedValue = ref("");
 
-// Add router instance
-const router = useRouter();
-
-// Debounce filterText to filterDebounced (simple debounce)
+// Debounce filterValue to filterDebouncedValue
 let debounceTimeout;
-watch(filterText, (val) => {
+watch([filterKey, filterValue], ([key, val]) => {
   clearTimeout(debounceTimeout);
   debounceTimeout = setTimeout(() => {
-    filterDebounced.value = val;
+    filterDebouncedKey.value = key;
+    filterDebouncedValue.value = val;
   }, 400);
 });
 
-// Use filterDebounced in the query
+// Use filterDebouncedKey/Value in the query
 const { isLoading, isError, data, error } = useQuery({
-  queryKey: ["users", filterDebounced],
-  queryFn: () => fetchUsers(filterDebounced.value ? { search: filterDebounced.value } : {}),
+  queryKey: ["users", filterDebouncedKey, filterDebouncedValue],
+  queryFn: () =>
+    filterDebouncedValue.value
+      ? fetchUsers({ [filterDebouncedKey.value]: filterDebouncedValue.value })
+      : fetchUsers(),
 });
 
-// Verify user mutation
+const router = useRouter();
+
 const verifyUserMutation = useMutation({
   mutationFn: (user) => verifyUser(user.id, { verified: true }),
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ["users"] });
-    showVerificationTable.value = false; // Close the verification table
+    showVerificationTable.value = false;
   },
 });
-
-// Delete user mutation
 const deleteUserMutation = useMutation({
   mutationFn: (userId) => deleteUser(userId),
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ["users"] });
   },
 });
-
-// Example handlers
 function onUpdateUser(user) {
-  // Route to FormPage for update using object syntax for dynamic params
   router.push({ path: `/admin/users/form/${user.id}` });
 }
-
 function onDeleteUser(user) {
   if (confirm(`Delete user ${user.name || user.firstname}?`)) {
     deleteUserMutation.mutate(user.id);
   }
 }
-
-// Route to FormPage for create
 function onCreateUserClick() {
   router.push("/admin/users/form");
 }
-
-// Handler to switch to verification table
 function onOpenVerificationTable() {
   showVerificationTable.value = true;
 }
-
-// Handler for verifying a user
 function onVerifyUser(user) {
-  // Route to FormPage for update, with verify query param
   router.push({ path: `/admin/users/form/${user.id}`, query: { verify: "1" } });
 }
-
 function onCloseVerificationTable() {
   showVerificationTable.value = false;
 }
-
 </script>
 
 <template>
@@ -101,16 +88,23 @@ function onCloseVerificationTable() {
   <div style="margin: 1em 0;">
     <label>
       Filter users:
-      <textarea
-        v-model="filterText"
-        rows="2"
-        cols="40"
-        placeholder="Type to filter users by any field..."
+      <select v-model="filterKey" :disabled="showCreateForm || showUpdateForm || showVerificationTable">
+        <option value="email">Email</option>
+        <option value="firstName">First Name</option>
+        <option value="lastName">Last Name</option>
+        <!-- Add more keys as needed -->
+      </select>
+      <input
+        v-model="filterValue"
+        :type="filterKey === 'active' || filterKey === 'verified' ? 'checkbox' : 'text'"
+        :checked="filterKey === 'active' || filterKey === 'verified' ? filterValue : undefined"
+        @change="filterKey === 'active' || filterKey === 'verified' ? filterValue = $event.target.checked : null"
+        :placeholder="`Type to filter by ${filterKey}...`"
         :disabled="showCreateForm || showUpdateForm || showVerificationTable"
-      ></textarea>
+        style="margin-left:0.5em;"
+      />
     </label>
   </div>
-  <!-- Remove inline forms, routing is now used -->
   <span v-if="isLoading"><Loading /></span>
   <span v-else-if="isError">Error: {{ error.message }}</span>
   <VerificationTable
