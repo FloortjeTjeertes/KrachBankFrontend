@@ -89,7 +89,6 @@ export default {
       const token = userResponse.token;
       const userDetails = userResponse.userDetails;
 
-      userStore.setToken(token);
       userStore.setUser(userDetails);
 
       // Store token
