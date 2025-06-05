@@ -26,7 +26,7 @@
 <script>
 import { login } from "@/queries/users";
 import { useToast } from "vue-toastification";
-import { useUserStore } from "@/stores/UserStore";
+import { useUserStore } from "@/stores/userStore";
 
 const toast = useToast();
 export default {
