@@ -4,6 +4,7 @@ import HomePage from "./components/pages/HomePage.vue";
 import AdminPage from "./components/pages/AdminPage.vue";
 import FormPage from "./components/pages/FormPage.vue";
 import LoginPage from "./components/pages/LoginPage.vue";
+import TransactionPage from "./components/pages/TransactionPage.vue";
 import VerifiedPage from "./components/pages/VerifiedPage.vue";
 import NotVerifiedPage from "./components/pages/NotVerifiedPage.vue";
 import ATMPage from "./components/pages/ATMPage.vue";
@@ -16,9 +17,7 @@ import atmOverview from "./components/pages/ATMOverview.vue";
 const routes = [
 
   { path: "/",name:"Home", component: HomePage },
-  {
-    path: "/admin",
-    component: AdminPage,
+  {path: "/admin", component: AdminPage,
     children: [
       { path: "", redirect: "admin/users" },
       { path: "users", component: () => import("./components/containers/UserContainer.vue") },
@@ -37,7 +36,9 @@ const routes = [
   { path: "/verified", redirect: "/" },
   { path: "/notverified", component: NotVerifiedPage },
   { path: "/atm", component: atmPage },
-  { path: "/atmoverview", component: atmOverview }
+  { path: "/atmoverview", component: atmOverview },
+  {path: "/account/:iban/newTransaction", component: TransactionPage, props: true },
+  {path: "/transactions/new", component: TransactionPage},
   
 ];
 

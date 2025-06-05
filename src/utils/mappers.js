@@ -32,6 +32,7 @@ export function mapToTransaction(transaction) {
 
 //maybe move to other file
 export function mapToAccount(apiObject) {
+  console.log("Mapping API object to account:", apiObject);
   if (!apiObject) {
     console.warn("No API object provided, returning null");
     return null;
@@ -47,7 +48,7 @@ export function mapToAccount(apiObject) {
     !apiObject.type
   ) {
     console.warn("Incomplete API object, returning null");
-    return null;
+    throw Error("Incomplete API object, returning null");
   }
 
   if (
