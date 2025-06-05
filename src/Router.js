@@ -34,7 +34,7 @@ const routes = [
   {path: "/account/:iban", name:"AccountDetails", component: AccountPage}  ,
   { path: "/:pathMatch(.*)*", redirect: "/" },
   { path: "/login", component: LoginPage },
-  { path: "/verified", component: VerifiedPage },
+  { path: "/verified", redirect: "/" },
   { path: "/notverified", component: NotVerifiedPage },
   { path: "/atm", component: atmPage },
   { path: "/atmoverview", component: atmOverview }
