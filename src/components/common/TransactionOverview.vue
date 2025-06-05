@@ -1,7 +1,7 @@
 <template>
     <div>
         transaction overview
-        <TransactionsTable :transactions="transactionList" />
+        <TransactionsTable v-if="transactionList && transactionList.length > 0" :transactions="transactionList" />
     </div>
 </template>
 
@@ -15,6 +15,7 @@ import { useToast } from "vue-toastification";
 import { useUserStore } from "../../stores/userStore";
 import { useRouter } from "vue-router";
 const toast = useToast();
+const userStore = useUserStore();
 
 
 var accountId = userStore.getUser?.id; // Default account ID, replace with actual logic to get current account ID
@@ -86,7 +87,7 @@ function getLoggedInUser() {
     try {
         if (!userStore.getUser || !userStore.getUser.id) {
             console.warn("No user found in store, please login first.");
-            router.push({ name: "Login" }); // Redirect to login page if no user is found
+            //router.push("/login"); // Redirect to login page if no user is found
         }
        
         users.fetchUserById(userStore.getUser.id); // Ensure user data is fetched

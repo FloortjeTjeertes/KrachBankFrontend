@@ -46,18 +46,18 @@ const router = createRouter({
   routes,
 });
 
-// router.beforeEach((to, from, next) => {
-//   const userStore = useUserStore();
-//   const isAuthenticated = !!userStore.getUser; // or your actual auth check
+router.beforeEach((to, from, next) => {
+  const userStore = useUserStore();
+  const isAuthenticated = !!userStore.getUser; // or your actual auth check
 
-//   // List of routes that do NOT require authentication
-//   const publicPages = ["/login", "/verified", "/notverified"];
-//   const authRequired = !publicPages.includes(to.path);
+  // List of routes that do NOT require authentication
+  const publicPages = ["/login", "/verified", "/notverified"];
+  const authRequired = !publicPages.includes(to.path);
 
-//   if (authRequired && !isAuthenticated) {
-//     return next("/login");
-//   }
-//   next();
-// });
+  if (authRequired && !isAuthenticated) {
+    return next("/login");
+  }
+  next();
+});
 
 export default router;

@@ -39,7 +39,17 @@ import { login } from "@/queries/users";
 import { useToast } from "vue-toastification";
 import { useUserStore } from "@/stores/userStore"; // fixed casing
 
+
+
+
 const toast = useToast();
+
+// if(!userStore.isAuthenticated) {
+//     console.warn("No user found in store, redirecting to login.");
+//     router.push("/login" );
+// }
+
+
 export default {
   name: "LoginForm",
   emits: ["login-submitted", "switch-to-signup", "switch-to-atm"],
