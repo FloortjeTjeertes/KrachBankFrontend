@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue';
 import path from 'path'; // Make sure to import 'path'
 
 export default defineConfig({
+  base: '/KrachBankFrontend/', // <-- Add this line for GitHub Pages!
   plugins: [vue()],
   resolve: {
     alias: {
