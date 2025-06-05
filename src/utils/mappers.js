@@ -40,6 +40,16 @@ export function mapToAccount(apiObject) {
     console.warn("Invalid API object type, returning null");
     return null;
   }
+  if( !apiObject.owner ||
+    !apiObject.balance ||
+    !apiObject.iban ||
+    !apiObject.absoluteLimit ||
+    !apiObject.type
+  ) {
+    console.warn("Incomplete API object, returning null");
+    return null;
+  }
+
   if (
     apiObject.owner === undefined ||
     apiObject.balance === undefined ||

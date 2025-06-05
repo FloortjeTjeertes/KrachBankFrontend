@@ -3,10 +3,22 @@
     <h2>Login</h2>
     <form @submit.prevent="submitLogin">
       <label for="username">Username</label>
-      <input type="text" id="username" v-model="username" placeholder="Enter your username" required />
+      <input
+        type="text"
+        id="username"
+        v-model="username"
+        placeholder="Enter your username"
+        required
+      />
 
       <label for="password">Password</label>
-      <input type="password" id="password" v-model="password" placeholder="Enter your password" required />
+      <input
+        type="password"
+        id="password"
+        v-model="password"
+        placeholder="Enter your password"
+        required
+      />
 
       <label for="rememberMe">
         <input type="checkbox" id="rememberMe" v-model="rememberMe" />
@@ -16,60 +28,91 @@
       <button type="submit">Login</button>
     </form>
     <p class="signup-link">
-      Don't have an account? <a href="#" @click.prevent="$emit('switch-to-signup')">Sign up</a>
+      Don't have an account?
+      <a href="#" @click.prevent="$emit('switch-to-signup')">Sign up</a>
     </p>
   </div>
 </template>
 
 <script>
-import { login } from '@/queries/users';
+import { login } from "@/queries/users";
 import { useToast } from "vue-toastification";
+import { useUserStore } from "@/stores/userStore"; // fixed casing
+
+
+
+
 const toast = useToast();
+
+// if(!userStore.isAuthenticated) {
+//     console.warn("No user found in store, redirecting to login.");
+//     router.push("/login" );
+// }
+
+
 export default {
-  name: 'LoginForm',
-  emits: ['login-submitted', 'switch-to-signup'],
+  name: "LoginForm",
+  emits: ["login-submitted", "switch-to-signup", "switch-to-atm"],
   data() {
     return {
-      username: '',
-      password: '',
+      username: "",
+      password: "",
       rememberMe: false,
     };
   },
   methods: {
     async submitLogin() {
+      // Prevent empty username/password
+      if (!this.username || !this.password) {
+        toast.error("Username and password are required.");
+        return;
+      }
       try {
         const response = await login({
           username: this.username,
           password: this.password,
         });
 
-        console.log('Full login response object from login function:', response); // Keep this for debugging
-        console.log('Login successful:', response);
-        toast.success('Login successful!');
-        // --- ADJUSTED ACCESS TO RESPONSE PROPERTIES ---
-        const token = response.token; // Access 'token' instead of 'jwtToken'
-        const isUserVerified = response.userDetails.verified; // Access 'userDetails.verified'
-        // --- END ADJUSTED ACCESS ---
-
-        // Store token
-        if (this.rememberMe) {
-          localStorage.setItem('token', token);
-        } else {
-          sessionStorage.setItem('token', token);
+        // Only proceed if token is present
+        if (!response || !response.token) {
+          toast.error("Login failed: No token received.");
+          return;
         }
 
-        if (isUserVerified) {
-          this.$router.push('/dummy');
+        toast.success("Login successful!");
+        this.AuthenticateUser(response);
+        let userStore = useUserStore();
+
+        if (userStore.getUser.isVerified) {
+          this.$router.push("/");
         } else {
-          this.$router.push('/notverified');
+          this.$router.push("/notverified");
         }
-
-        this.$emit('login-submitted', response);
-
+        this.$emit("login-submitted", response);
       } catch (error) {
-        const msg = error.response?.data?.message || 'Login failed';
-        toast.error(msg );
-        console.error('Login error:', error);
+        // Avoid storing any token on error
+        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
+        const msg = error.response?.data?.message || "Login failed";
+        toast.error(msg);
+        console.error("Login error:", error);
+      }
+    },
+
+    AuthenticateUser(userResponse) {
+      const userStore = useUserStore();
+      const token = userResponse.token;
+      const userDetails = userResponse.userDetails;
+
+      userStore.setUser(userDetails);
+
+      // Store token only if present
+      if (token) {
+        if (this.rememberMe) {
+          localStorage.setItem("token", token);
+        } else {
+          sessionStorage.setItem("token", token);
+        }
       }
     },
   },
@@ -81,21 +124,25 @@ export default {
 h2 {
   margin-bottom: 1rem;
 }
+
 label:has(input[type="checkbox"]) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
+
 .signup-link {
   margin-top: 1.5rem;
   text-align: center;
   font-size: 0.9em;
 }
+
 .signup-link a {
   color: var(--pico-primary);
   text-decoration: none;
   cursor: pointer;
 }
+
 .signup-link a:hover {
   text-decoration: underline;
 }

@@ -1,4 +1,5 @@
 
+import { toAccountFilter } from "../filters/accountFilter";
 import api from "./axios";
 
 
@@ -13,7 +14,7 @@ export const fetchAccounts = async (filter) => {
   return response.data;
 };
 // fetch a single account by ID
-export const fetchAccountById = async (Iban) => {
+export const fetchAccountByIban = async (Iban) => {
   const response = await api.get(`/accounts/${Iban}`);
   return response.data;
 };
@@ -28,14 +29,23 @@ export const fetchAccountsForUser = async (userId, filter) => {
   if (!filter) {
     filter = {};
   }
-  filter.userId = userId; // Ensure the filter includes the userId
-  const response = await api.get(`/users/${userId}/accounts`);
+  filter = toAccountFilter(filter); // Validate the filter
+  const response = await api.get(`/users/${userId}/accounts`,
+    {
+      params: filter, // Pass the filter as query parameters
+    }
+  );
   return response.data;
 };
 
+
+
+
+
+
 export default {
   fetchAccounts,
-  fetchAccountById,
+  fetchAccountByIban,
   createAccount,
   fetchAccountsForUser,
 };
