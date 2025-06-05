@@ -39,16 +39,7 @@ import { login } from "@/queries/users";
 import { useToast } from "vue-toastification";
 import { useUserStore } from "@/stores/userStore"; // fixed casing
 
-
-
-
 const toast = useToast();
-
-// if(!userStore.isAuthenticated) {
-//     console.warn("No user found in store, redirecting to login.");
-//     router.push("/login" );
-// }
-
 
 export default {
   name: "LoginForm",
@@ -81,19 +72,23 @@ export default {
 
         toast.success("Login successful!");
         this.AuthenticateUser(response);
-        let userStore = useUserStore();
-
-        if (userStore.getUser.isVerified) {
-          this.$router.push("/");
+        
+        const userStore = useUserStore(); // Ensure userStore instance is fresh for immediate access
+        if (userStore.getUser && userStore.getUser.admin) {
+          this.$router.push("/admin-dashboard"); 
+          toast.info("Welcome, Admin!"); 
+        } 
+        else if (userStore.getUser && userStore.getUser.verified) {
+          this.$router.push("/"); // Redirect to home/dashboard for verified non-admins
         } else {
-          this.$router.push("/notverified");
+          this.$router.push("/notverified"); 
         }
+        
         this.$emit("login-submitted", response);
       } catch (error) {
         // Avoid storing any token on error
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
-        const msg = error.response?.data?.message || "Login failed";
         toast.error(msg);
         console.error("Login error:", error);
       }
@@ -105,6 +100,7 @@ export default {
       const userDetails = userResponse.userDetails;
 
       userStore.setUser(userDetails);
+      console.log("User details set in store:", userDetails);
 
       // Store token only if present
       if (token) {
@@ -120,7 +116,6 @@ export default {
 </script>
 
 <style scoped>
-/* Your existing styles */
 h2 {
   margin-bottom: 1rem;
 }

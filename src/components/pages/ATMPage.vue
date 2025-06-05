@@ -50,7 +50,7 @@ export default {
         console.log(
           "Full login response object from login function:",
           response
-        ); // Keep this for debugging
+        ); 
         console.log("Login successful:", response);
         toast.success("Login successful!");
 
@@ -72,7 +72,6 @@ export default {
     },
 
     AuthenticateUser(userResponse) {
-      // Use UserStore to store user info and token
       const userStore = useUserStore();
 
       const token = userResponse.token;
