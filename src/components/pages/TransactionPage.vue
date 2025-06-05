@@ -1,75 +1,49 @@
 <template>
-  <div>
-    transactionForm
-    <section class="row">
-      <section class="col-md-5">
-        <BankAccout :bankAccount="SendingIBank" />
-      </section>
-      <section class="col-md-5">
-        <BankAccout :bankAccount="ReceivingIBank" />
-      </section>
+  <article >
+    <header>transactionForm</header>
+    <section>
+      <p>select account to send from</p>
+      <TransactionDropDown :iban="SendingIBan" />
+      <input type="number" v-model="Transaction.amount" placeholder="Amount" class="form-control"
+        min="0" step="0.01" @input="DisableMinusValue" />
+      <TransactionDropDown :iban="SendingIBan" />
+      <button type="button" class="btn btn-primary"  @click="$emit('submit', Transaction)">submit</button>
     </section>
-  </div>
+
+  </article>
 </template>
 
 <script setup>
-import { defineProps } from "vue";
-import BankAccout from "@/components/common/BankAccount.vue";
-defineProps({
-  SendingIBank: {
-    type: Object,
-    required: true,
-    default: () => ({
-      name: "Default Bank Account",
-      owner: {
-        id: 0,
-        name: "placeholderUserName",
-        firstName: "placeholder",
-        lastName: "placeholder",
-      },
-      balance: 0,
-      iban: "DE00000000000000000000",
-      createdAt: new Date().toISOString(),
-      absoluteLimit: 0,
-      type: {
-        name: "Checking",
-        img: "path/to/icon.png",
-      },
-    }),
-  },
-  ReceivingIBank: {
-    type: Object,
-    required: true,
-    default: () => ({
-      name: "Default Bank Account",
-      owner: {
-        id: 0,
-        name: "placeholderUserName",
-        firstName: "placeholder",
-        lastName: "placeholder",
-      },
-      balance: 0,
-      iban: "DE00000000000000000000",
-      createdAt: new Date().toISOString(),
-      absoluteLimit: 0,
-      type: {
-        name: "Checking",
-        img: "path/to/icon.png",
-      },
-    }),
-  },
+import { ref } from "vue";
+import BankAccount from "@/components/common/BankAccount.vue";
+import TransactionDropDown from "@/components/common/TransactionDropDown.vue";
 
-  Transaction: {
-    type: Object,
-    default: () => ({
-      amount: 0,
-      date: new Date().toISOString(),
-      description: "",
-      senderIBAN: "",
-      receiverIBAN: "",
-    }),
+const props = defineProps({
+  SendingIBan: {
+    type: String,
+    default: "DE00000000000000000000",
+  },
+  ReceivingIBan: {
+    type: String,
+    default: "DE00000000000000000000",
   },
 });
+
+const Transaction = ref({
+  amount: 0,
+  date: new Date().toISOString(),
+  description: "",
+  senderIBAN: props.SendingIBan,
+  receiverIBAN: props.ReceivingIBan,
+});
+
+function DisableMinusValue(event) {
+  if (event.target.value < 0) {
+      console.log(event.target.value);
+     Transaction.value.amount= 0;
+  }
+}
+
 </script>
 
 <style lang="css" scoped></style>
