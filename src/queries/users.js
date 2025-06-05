@@ -26,7 +26,6 @@ export const createUser = async (userData) => {
 export const login = async (credentials) => {
   console.log("Logging in with credentials:", credentials);
   const response = await api.post('/auth/login', credentials);
-  // Ensure response is JSON and contains a token
   if (
     typeof response.data !== "object" ||
     !response.data.token

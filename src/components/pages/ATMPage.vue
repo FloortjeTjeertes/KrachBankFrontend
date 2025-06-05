@@ -46,26 +46,22 @@ export default {
           username: this.username,
           password: this.password,
         });
+        if (!response || !response.token) {
+          toast.error("Login failed: No token received.");
+          return;
+        }
 
-        console.log(
-          "Full login response object from login function:",
-          response
-        ); 
-        console.log("Login successful:", response);
         toast.success("Login successful!");
-
-        // Move authentication logic to AuthenticateUser
         this.AuthenticateUser(response);
         let userStore = useUserStore();
 
-        if (userStore.getUser.isVerified) {
+        if (userStore.getUser.verified) {
           this.$router.push("/atmoverview");
         } else {
-          this.$router.push("/atmoverview");
+          this.$router.push("/notverified");
         }
         this.$emit("login-submitted", response);
       } catch (error) {
-        const msg = error.response?.data?.message || "Login failed";
         toast.error(msg);
         console.error("Login error:", error);
       }
