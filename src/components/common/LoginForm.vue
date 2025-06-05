@@ -26,7 +26,6 @@
       </label>
 
       <button type="submit">Login</button>
-      <button type="button" style="margin-left: 1em;" @click="$emit('switch-to-atm')">Login to ATM</button>
     </form>
     <p class="signup-link">
       Don't have an account?

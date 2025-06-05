@@ -37,7 +37,9 @@ const routes = [
   { path: "/verified", component: VerifiedPage },
   { path: "/notverified", component: NotVerifiedPage },
   { path: "/atm", component: atmPage },
-  { path: "/atmoverview", component: atmOverview };
+  { path: "/atmoverview", component: atmOverview }
+  
+];
 
 const router = createRouter({
   history: createWebHistory(),
