@@ -6,11 +6,19 @@ import api from "./axios";
 
 // fetch accounts
 
-export const fetchAccounts = async (filter) => {
+export const fetchAccounts = async (filter,page,limit) => {
   if (!filter) {
     filter = {};
   }
-  const response = await api.get("/accounts");
+   if (page && limit) {
+    filter.page = page; // Add pagination parameters
+    filter.limit = limit;
+  }
+  const response = await api.get("/accounts",
+    {
+      params: filter, // Pass the filter as query parameters
+    }
+  );
   return response.data;
 };
 // fetch a single account by ID
@@ -25,11 +33,15 @@ export const createAccount = async (accountData) => {
   return response.data;
 };
 
-export const fetchAccountsForUser = async (userId, filter) => {
+export const fetchAccountsForUser = async (userId, filter,page,limit) => {
   if (!filter) {
     filter = {};
   }
   filter = toAccountFilter(filter); // Validate the filter
+  if (page && limit) {
+    filter.page = page; // Add pagination parameters
+    filter.limit = limit;
+  }
   const response = await api.get(`/users/${userId}/accounts`,
     {
       params: filter, // Pass the filter as query parameters

@@ -1,9 +1,8 @@
 <template>
   <div class="row small-account">
-    <div class="col-md-1">
+    <div class="col-md-2">
       <img
         :src="account.type.img"
-        alt="Account Type Icon"
         class="image-icon"
       />
     </div>
@@ -17,12 +16,12 @@
         <small class="text-center">Owner: {{ account.owner.firstName }} {{ account.owner.lastName }}</small>
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
 import AccountTypes from "@/models/accountTypes";
-import { ref } from "vue";
 
 defineProps({
   account: {
@@ -44,14 +43,18 @@ defineProps({
 </script>
 
 <style lang="css" scoped>
-.image-icon {
-  width: fit-content;
-  height: 50%;
-}
+/* .image-icon {
+   width: 100%;
+  height: 10%;
+  max-width: 100%;   
+  max-height: 100%; 
+  object-fit: contain; 
+  display: block;
+} */
 .top-section {
   display: flex;
   align-items: center;
-    justify-content: space-between;
+  justify-content: space-between;
 }
 .bottom-section {
 

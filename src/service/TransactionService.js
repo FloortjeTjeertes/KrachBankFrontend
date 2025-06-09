@@ -19,6 +19,43 @@ async function getTransactionsForAccount(accountId) {
   }
 }
 
+async function sendTransaction(transactionData) {
+  try {
+    if (!transactionData || !transactionData.accountId) {
+      throw new Error("Invalid transaction data provided.");
+    }
+    if(!validateNewTransaction(transactionData))
+    {
+      throw new Error("Transaction data validation failed.");
+    }
+
+    const result = await transaction.sendTransaction(transactionData);
+
+    if (!result || !result.success) {
+      throw new Error("Failed to send transaction: " + result.message);
+    }
+
+    console.log("Transaction sent successfully:", result);
+    return result;
+  } catch (error) {
+    console.error("Error sending transaction:", error);
+    throw error;
+  }
+}
+function validateNewTransaction(transactionData) {
+    if (
+      !transactionData ||
+      !transactionData.amount ||
+      !transactionData.type ||
+      !transactionData.sender ||
+      !transactionData.receiver
+    ) {
+      return false;
+    }
+    return true;
+ 
+}
 export default {
   getTransactionsForAccount,
+  sendTransaction,
 };

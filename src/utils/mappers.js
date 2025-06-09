@@ -8,7 +8,6 @@ export function mapToTransaction(transaction) {
   if (typeof transaction !== "object") {
     throw new Error("Invalid transaction type, expected an object");
   }
-  console.log("Mapping transaction:", transaction);
   if (
     !transaction.amount ||
     !transaction.sender ||
@@ -32,7 +31,6 @@ export function mapToTransaction(transaction) {
 
 //maybe move to other file
 export function mapToAccount(apiObject) {
-  console.log("Mapping API object to account:", apiObject);
   if (!apiObject) {
     console.warn("No API object provided, returning null");
     return null;
