@@ -23,14 +23,18 @@
 import { onMounted, ref, toRaw } from "vue";
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from "vue-toastification";
+import { useRoute } from "vue-router";
 import TransactionDropDown from "@/components/common/TransactionDropDown.vue";
 import { watch } from "vue";
 import transactionService from "@/service/TransactionService.js";
 
 const userStore = useUserStore();
+const route = useRoute();
 const userId = ref(userStore.getUser?.id);
 const selectedAccountSend = ref(null);
 const selectedAccountReceive = ref(null);
+const sendingIBan = ref();
+
 const props = defineProps({
   SendingIBan: {
     type: String,
@@ -42,8 +46,7 @@ const props = defineProps({
   },
 });
 onMounted(() => {
-  console.log("TransactionPage" + selectedAccountSend.value);
-
+  fillSenderFromRoute()
 });
 
 watch(selectedAccountSend, (newValue) => {
@@ -109,6 +112,15 @@ async function SendTransaction() {
 
 }
 
+
+function fillSenderFromRoute() {
+  if (route.params.iban) {
+    sendingIBan.value = route.params.iban;
+
+  } else {
+    console.warn("No IBAN provided in route params.");
+  }
+}
 </script>
 
 <style lang="css" scoped>

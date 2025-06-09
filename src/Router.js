@@ -15,31 +15,63 @@ import atmPage from "./components/pages/ATMPage.vue";
 import atmOverview from "./components/pages/ATMOverview.vue";
 
 const routes = [
-
-  { path: "/",name:"Home", component: HomePage },
-  {path: "/admin", component: AdminPage,
+  { path: "/", name: "Home", component: HomePage },
+  {
+    path: "/admin",
+    name: "Admin",
+    component: AdminPage,
     children: [
       { path: "", redirect: "admin/users" },
-      { path: "users", component: () => import("./components/containers/UserContainer.vue") },
-      {path: "users/form", component: () => import("./components/pages/FormPage.vue") },
-      {path: "users/form/:id", component: () => import("./components/pages/FormPage.vue"), props: true },
-      { path: "transactions", component: () => import("./components/containers/TransactionsContainer.vue") },
-      { path: "accounts", component: () => import("./components/containers/AccountsContainer.vue") },
-      { path: "atm", component: () => import("./components/pages/ATMPage.vue") },
-      { path: "atmoverview", component: () => import("./components/pages/ATMOverview.vue") }
+      {
+        path: "users",
+        name: "AdminUsers",
+        component: () => import("./components/containers/UserContainer.vue"),
+      },
+            {
+        path: "users/form",
+        name: "AdminUserForm",
+        component: () => import("./components/pages/FormPage.vue"),
+      },
+      {
+        path: "users/form/:id",
+        name: "AdminUserFormEdit",
+        component: () => import("./components/pages/FormPage.vue"),
+        props: true,
+      },
+      {
+        path: "transactions",
+        name: "AdminTransactions",
+        component: () =>
+          import("./components/containers/TransactionsContainer.vue"),
+      },
+      {
+        path: "accounts",
+        name: "AdminAccounts",
+        component: () =>
+          import("./components/containers/AccountsContainer.vue"),
+      },
+      {
+        path: "atm",
+        name: "AdminATM",
+        component: () => import("./components/pages/ATMPage.vue"),
+      },
+      {
+        path: "atmoverview",
+        name: "AdminATMOverview",
+        component: () => import("./components/pages/ATMOverview.vue"),
+      },
     ],
   },
-  { path: "/form",component: FormPage},  
-  {path: "/account/:iban", name:"AccountDetails", component: AccountPage}  ,
-  { path: "/:pathMatch(.*)*", redirect: "/" },
-  { path: "/login", component: LoginPage },
-  { path: "/verified", redirect: "/" },
-  { path: "/notverified", component: NotVerifiedPage },
-  { path: "/atm", component: atmPage },
-  { path: "/atmoverview", component: atmOverview },
-  {path: "/account/:iban/newTransaction", component: TransactionPage, props: true },
-  {path: "/transactions/new", component: TransactionPage},
-  
+  { path: "/form", name: "Form", component: FormPage },
+  { path: "/account/:iban", name: "AccountDetails", component: AccountPage },
+  { path: "/:pathMatch(.*)*", name: "NotFound", redirect: "/" },
+  { path: "/login", name: "Login", component: LoginPage },
+  { path: "/verified", name: "Verified", redirect: "/" },
+  { path: "/notverified", name: "NotVerified", component: NotVerifiedPage },
+  { path: "/atm", name: "ATM", component: atmPage },
+  { path: "/atmoverview", name: "ATMOverview", component: atmOverview },
+  { path: "/account/:iban/newTransaction", name: "NewAccountTransaction",  component: TransactionPage, props: true,},
+  { path: "/transactions/new",  name: "NewTransaction", component: TransactionPage, },
 ];
 
 const router = createRouter({
