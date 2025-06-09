@@ -37,4 +37,6 @@ export default {
   fetchTransactions,
   addTransaction,
   fetchUserTransactions,
+  fetchTransactionsForAccount
+
 };

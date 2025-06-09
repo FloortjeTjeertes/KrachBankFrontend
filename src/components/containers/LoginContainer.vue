@@ -4,7 +4,7 @@
       <img :src="backgroundImage" alt="Background Image" class="background-image" />
       <div class="overlay">
         <h1>KrachBank</h1>
-        <p>Make everything possible with a little krach.</p>
+        <p>Your money is between somewhat and reasonably safe with us!</p>
       </div>
     </div>
     <div class="right-section">
@@ -37,9 +37,6 @@ import ATMLoginForm from '../common/ATMLoginForm.vue';
 import blueTrumpBackground from '@/assets/bluetrump.png'; 
 import { login as userLogin } from '@/queries/users';
 import { register as userRegister } from '@/queries/authentication';
-// If you have a dedicated ATM login endpoint, import it here
-// import { atmLogin } from '@/queries/atm';
-
 export default {
   name: 'LoginContainer',
   components: {
@@ -54,60 +51,14 @@ export default {
       backgroundImage: blueTrumpBackground,
     };
   },
-  methods: {
-    async handleLogin(formData) {
-      try {
-        const response = await userLogin({
-          username: formData.username,
-          password: formData.password,
-        });
-        // Handle token/session logic here
-        // ...existing code...
-        console.log('Login successful:', response);
-        // Example: this.$router.push('/dashboard');
-      } catch (error) {
-        alert(error.response?.data?.message || 'Login failed');
-      }
-    },
-    async handleSignup(formData) {
-      try {
-        const response = await userRegister(formData);
-        // Handle post-signup logic here
-        // ...existing code...
-        console.log('Signup successful:', response);
-        // Example: this.showLogin = true;
-      } catch (error) {
-        alert(error.response?.data?.message || 'Signup failed');
-      }
-    },
-    async handleAtmLogin(formData) {
-      try {
-        // If you have a dedicated ATM login endpoint, use it here
-        // const response = await atmLogin(formData);
-        // For now, just simulate success and route to ATM page
-        console.log('ATM login data received in LoginContainer:', formData);
-        this.$router.push('/atm');
-      } catch (error) {
-        alert(error.response?.data?.message || 'ATM login failed');
-      }
-    },
-    switchToAtmLogin() {
-      this.showAtmLogin = true;
-    },
-    switchToNormalLogin() {
-      this.showAtmLogin = false;
-      this.showLogin = true;
-    },
-  },
 };
 </script>
 
 <style scoped>
-/* These styles remain for the overall layout, Pico doesn't dictate flexbox on this scale */
 .login-page {
   display: flex;
   height: 100vh;
-  font-family: sans-serif; /* Keep your font if desired, or let Pico's default apply */
+  font-family: sans-serif; 
 }
 
 .left-section {
