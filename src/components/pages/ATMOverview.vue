@@ -81,7 +81,6 @@ const processingTransaction = ref(false);
 const transactionError = ref(null);
 
 
-// Computed properties (remain largely the same, as they are UI-related validations)
 const formattedBalance = computed(() => {
   return balance.value.toFixed(2);
 });

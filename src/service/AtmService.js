@@ -1,12 +1,38 @@
 import accounts from '../queries/accounts'; // Assuming this fetches user accounts
 import { addTransaction } from '../queries/transactions'; // Assuming this sends transactions to API
 import { useUserStore } from '../stores/userStore'; // To get the user ID if needed by the service
-
-// --- Define the standard ATM IBAN (keep it here as well for consistency) ---
-const ATM_IBAN = "NL46KRCH9824532406";
+import { ref } from 'vue'; // Import ref from Vue if this is a Vue 3 setup
 
 export function useAtmService() {
-  const userStore = useUserStore(); // Access user store inside the service
+  const userStore = useUserStore();
+  const ATM_IBAN = ref(null); // Use ref to make ATM_IBAN reactive and initially null
+
+  // Function to fetch the ATM account IBAN
+  async function fetchAtmIban() {
+    if (ATM_IBAN.value) {
+      return ATM_IBAN.value; // Already fetched
+    }
+    try {
+      // Assuming ATM account always has ID 3 or is identifiable
+      const atmAccountArray = await accounts.fetchAccountsForUser(3);
+      if (atmAccountArray && Array.isArray(atmAccountArray) && atmAccountArray.length > 0) {
+        // Find the specific ATM account, if there are multiple accounts for user ID 3
+        // Or assume the first one is the ATM account
+        const atmCheckingAccount = atmAccountArray.find(account => account.type === "CHECKING"); // Assuming ATM also has a CHECKING type
+        if (atmCheckingAccount) {
+          ATM_IBAN.value = atmCheckingAccount.iban;
+          return ATM_IBAN.value;
+        } else {
+          throw new Error("ATM checking account not found.");
+        }
+      } else {
+        throw new Error("ATM account not found or invalid response.");
+      }
+    } catch (error) {
+      console.error("Error fetching ATM IBAN:", error);
+      throw error; // Re-throw to propagate the error
+    }
+  }
 
   /**
    * Fetches the checking account balance and IBAN for the current user.
@@ -19,8 +45,9 @@ export function useAtmService() {
 
     try {
       const userId = userStore.getUser.id;
-      const currentFilter = { 'id': userId };
-      const accountsArray = await accounts.fetchAccountsForUser(userId, currentFilter);
+      // The currentFilter with 'id': userId might be redundant if fetchAccountsForUser already filters by userId
+      // based on its first argument. Review your accounts.fetchAccountsForUser implementation.
+      const accountsArray = await accounts.fetchAccountsForUser(userId);
 
       if (!accountsArray || !Array.isArray(accountsArray)) {
         throw new Error("Invalid response format from API: Expected an array of accounts.");
@@ -52,12 +79,17 @@ export function useAtmService() {
     if (amount <= 0) {
       throw new Error("Withdrawal amount must be positive.");
     }
-    // You might add more validation here if needed, like max withdrawal per transaction
+
+    // Ensure ATM_IBAN is fetched before proceeding
+    const atmIbanValue = await fetchAtmIban();
+    if (!atmIbanValue) {
+      throw new Error("ATM IBAN not available for withdrawal.");
+    }
 
     const transactionPayload = {
       amount: amount,
       sender: userCheckingIban,
-      receiver: ATM_IBAN,
+      receiver: atmIbanValue, // Use the fetched ATM IBAN
       description: "ATM Cash Withdrawal"
     };
 
@@ -79,11 +111,16 @@ export function useAtmService() {
     if (amount <= 0) {
       throw new Error("Deposit amount must be positive.");
     }
-    // You might add more validation here
+
+    // Ensure ATM_IBAN is fetched before proceeding
+    const atmIbanValue = await fetchAtmIban();
+    if (!atmIbanValue) {
+      throw new Error("ATM IBAN not available for deposit.");
+    }
 
     const transactionPayload = {
       amount: amount,
-      sender: ATM_IBAN,
+      sender: atmIbanValue, // Use the fetched ATM IBAN
       receiver: userCheckingIban,
       description: "ATM Cash Deposit"
     };
@@ -92,7 +129,7 @@ export function useAtmService() {
       await addTransaction(transactionPayload);
     } catch (error) {
       console.error("Error in atmService.processDeposit:", error);
-      throw error; // Re-throw for component to handle
+      throw error;
     }
   }
 
@@ -100,6 +137,6 @@ export function useAtmService() {
   return {
     fetchUserCheckingAccountDetails,
     processWithdrawal,
-    processDeposit
+    processDeposit,
   };
 }
