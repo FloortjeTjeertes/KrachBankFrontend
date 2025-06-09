@@ -8,12 +8,10 @@ export function mapToTransaction(transaction) {
   if (typeof transaction !== "object") {
     throw new Error("Invalid transaction type, expected an object");
   }
-  console.log("Mapping transaction:", transaction);
   if (
     !transaction.amount ||
     !transaction.sender ||
     !transaction.receiver ||
-    !transaction.description ||
     !transaction.initiator ||
     !transaction.createdAt
   ) {
@@ -47,7 +45,7 @@ export function mapToAccount(apiObject) {
     !apiObject.type
   ) {
     console.warn("Incomplete API object, returning null");
-    return null;
+    throw Error("Incomplete API object, returning null");
   }
 
   if (

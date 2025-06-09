@@ -39,16 +39,7 @@ import { login } from "@/queries/users";
 import { useToast } from "vue-toastification";
 import { useUserStore } from "@/stores/userStore"; // fixed casing
 
-
-
-
 const toast = useToast();
-
-// if(!userStore.isAuthenticated) {
-//     console.warn("No user found in store, redirecting to login.");
-//     router.push("/login" );
-// }
-
 
 export default {
   name: "LoginForm",
@@ -63,6 +54,8 @@ export default {
   methods: {
     async submitLogin() {
       // Prevent empty username/password
+      console.log('submitLogin called!');
+  console.trace('Call Stack for submitLogin:'); // Add this line
       if (!this.username || !this.password) {
         toast.error("Username and password are required.");
         return;
@@ -72,8 +65,6 @@ export default {
           username: this.username,
           password: this.password,
         });
-
-        // Only proceed if token is present
         if (!response || !response.token) {
           toast.error("Login failed: No token received.");
           return;
@@ -81,19 +72,31 @@ export default {
 
         toast.success("Login successful!");
         this.AuthenticateUser(response);
-        let userStore = useUserStore();
-
-        if (userStore.getUser.isVerified) {
-          this.$router.push("/");
+        const userStore = useUserStore(); // Ensure userStore instance is fresh for immediate access
+        
+        // --- Added check for userStore.getUser to prevent errors if userStore is null/undefined ---
+        if (userStore.getUser) { 
+          if (userStore.getUser.admin) { // Check for 'admin' property from backend response
+            this.$router.push("/admin/users"); 
+            toast.info("Welcome, Admin!"); 
+          } 
+          else if (userStore.getUser.verified) { // Check for 'verified' property from backend response
+            this.$router.push("/"); 
+          } else {
+            this.$router.push("/notverified"); 
+          }
         } else {
-          this.$router.push("/notverified");
+            // Fallback if user data isn't in store for some reason after AuthenticateUser
+            toast.error("User data not available after login.");
+            this.$router.push("/login"); // Redirect back to login
         }
+        
         this.$emit("login-submitted", response);
       } catch (error) {
-        // Avoid storing any token on error
+        // --- FIX: Define msg variable here ---
         localStorage.removeItem("token");
         sessionStorage.removeItem("token");
-        const msg = error.response?.data?.message || "Login failed";
+        const msg = error.response?.data?.message || "Login failed"; // This line defines msg
         toast.error(msg);
         console.error("Login error:", error);
       }
@@ -105,12 +108,15 @@ export default {
       const userDetails = userResponse.userDetails;
 
       userStore.setUser(userDetails);
+      console.log("User details set in store:", userDetails);
 
       // Store token only if present
       if (token) {
         if (this.rememberMe) {
+          sessionStorage.removeItem("token");
           localStorage.setItem("token", token);
         } else {
+          localStorage.removeItem("token");
           sessionStorage.setItem("token", token);
         }
       }
@@ -120,7 +126,6 @@ export default {
 </script>
 
 <style scoped>
-/* Your existing styles */
 h2 {
   margin-bottom: 1rem;
 }
