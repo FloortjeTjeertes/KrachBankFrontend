@@ -11,50 +11,71 @@ async function getTransactionsForAccount(accountId) {
     if (!transactions || transactions.length <= 0) {
       throw new Error("No transactions found for account: " + accountId);
     }
-    console.log("Fetched transactions for account:", accountId, transactions);
     return transactions;
   } catch (e) {
-    console.error("Error fetching transactions for account:", e);
     throw new Error("Error fetching transactions for account: " + accountId, e);
   }
 }
 
 async function sendTransaction(transactionData) {
   try {
-    if (!transactionData || !transactionData.accountId) {
-      throw new Error("Invalid transaction data provided.");
+    if (!transactionData ) { 
+      throw new Error("transactionData is required.");
     }
-    if(!validateNewTransaction(transactionData))
-    {
-      throw new Error("Transaction data validation failed.");
-    }
+   
+     transactionData = validateNewTransaction(transactionData);
 
-    const result = await transaction.sendTransaction(transactionData);
-
-    if (!result || !result.success) {
-      throw new Error("Failed to send transaction: " + result.message);
+    const result = await transaction.addTransaction(transactionData);
+    console.log("Transaction result:", result);
+    if (!result ) {
+      throw new Error("Failed to send transaction no value received: " + result.data);
     }
 
-    console.log("Transaction sent successfully:", result);
     return result;
   } catch (error) {
-    console.error("Error sending transaction:", error);
-    throw error;
+    throw new Error( error.message);
   }
 }
 function validateNewTransaction(transactionData) {
-    if (
-      !transactionData ||
-      !transactionData.amount ||
-      !transactionData.type ||
-      !transactionData.sender ||
-      !transactionData.receiver
-    ) {
-      return false;
-    }
-    return true;
- 
+  if (
+    !transactionData ||
+    !transactionData.amount ||
+    !transactionData.senderIBAN ||
+    !transactionData.receiverIBAN
+  ) {
+    throw new Error("Invalid transaction data provided.");
+  }
+
+  if (isNaN(transactionData.amount) || transactionData.amount <= 0) {
+    throw new Error("Transaction amount must be a positive number.");
+  }
+  if(transactionData.amount <= 0) {
+    throw new Error("Transaction amount exceeds the limit of 1,000,000.");
+  }
+  //IBAN validation (tnx COPILOT)
+  validateIban(transactionData.senderIBAN);
+  validateIban(transactionData.receiverIBAN);
+  return {
+    amount: transactionData.amount,
+    sender: transactionData.senderIBAN,
+    receiver: transactionData.receiverIBAN,
+    description: transactionData.description || "",
+  };
 }
+
+function validateIban(iban) {
+  if (!iban || typeof iban !== "string") {
+    throw new Error("Invalid IBAN provided.");
+  }
+  // Basic IBAN format validation
+  const ibanRegex = /^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/;
+  if (!ibanRegex.test(iban)) {
+    throw new Error("Invalid IBAN format.");
+  }
+  return iban;
+}
+
+
 export default {
   getTransactionsForAccount,
   sendTransaction,

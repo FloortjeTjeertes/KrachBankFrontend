@@ -12,7 +12,6 @@ export function mapToTransaction(transaction) {
     !transaction.amount ||
     !transaction.sender ||
     !transaction.receiver ||
-    !transaction.description ||
     !transaction.initiator ||
     !transaction.createdAt
   ) {

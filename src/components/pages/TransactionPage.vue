@@ -12,20 +12,21 @@
       <h6>write a description:</h6>
       <input type="text" v-model="Transaction.description" placeholder="Description" class="form-control" />
       <button type="button" class="btn btn-primary"  @click="SendTransaction">submit</button>
+      
     </form>
-   {{ Transaction }}
 
     
   </article>
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, toRaw } from "vue";
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from "vue-toastification";
 import TransactionDropDown from "@/components/common/TransactionDropDown.vue";
 import { watch } from "vue";
-import transactions from "../../queries/transactions";
+import transactionService from "@/service/TransactionService.js";
+
 const userStore = useUserStore();
 const userId = ref(userStore.getUser?.id);
 const selectedAccountSend = ref(null);
@@ -93,18 +94,19 @@ function validateTransaction(transaction) {
   return true;
 }
 
-function SendTransaction() {
+async function SendTransaction() {
   if (!validateTransaction(Transaction.value)) {
     return;
   }
   try {
-    transactions.sendTransaction(Transaction.value);
+  
+    await transactionService.sendTransaction(Transaction.value);
     useToast().success("Transaction sent successfully!");
   } catch (error) {
-    useToast().error("Failed to send transaction: " + error.message);
+    
+    useToast().error(error.message);
   }
 
-  console.log("Transaction sent:", Transaction.value);
 }
 
 </script>
