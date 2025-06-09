@@ -3,7 +3,7 @@
     <h2>Overview</h2>
 
     <ActionMenu @filter="handleFilter" class="box" />
-    <section v-if="bankAccounts.length === 0">
+    <section v-if="bankAccounts.length === 0 || !bankAccounts">
         <p>No bank accounts found.</p>
     </section>
     <section class="accountList"  v-else>
@@ -44,6 +44,11 @@ onMounted(() => {
         if (!accounts && accounts.length <= 0) {
             toast.warning("No accounts found or error fetching accounts.");
             console.warn("No accounts found or error fetching accounts.");
+            return;
+        }
+        if(!Array.isArray(accounts)) {
+            toast.error("Unexpected response format for accounts.");
+            console.error("Unexpected response format for accounts:", accounts);
             return;
         }
         bankAccounts.value = accounts.map(account => mapToAccount(account));
