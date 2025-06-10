@@ -62,7 +62,6 @@ export default {
         }
         this.$emit("login-submitted", response);
       } catch (error) {
-        toast.error(msg);
         console.error("Login error:", error);
       }
     },
