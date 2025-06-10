@@ -4,6 +4,7 @@ defineProps({
 
     bankAccount: {
         type: Object,
+        required: true,
         default: () => ({
             name: "Default Bank Account",
             owner: {
@@ -13,7 +14,7 @@ defineProps({
                 lastName: "placeholder",
             },
             balance: 0,
-            IBAN: "DE00000000000000000000",
+            iban: "DE00000000000000000000",
             createdAt: new Date().toISOString(),
             absoluteLimit: 0,
             type: AccountTypes.CHECKING
@@ -29,7 +30,7 @@ defineProps({
         <header class=" bank-header">
             <img :src="bankAccount.type.img" alt="Icon" class="bank-icon" />
             <h4>{{ bankAccount.type.name }} account</h4>
-            <!-- <h4>{{ bankAccount.name }}</h4> -->
+            <h4>{{ bankAccount.name }}</h4>
         </header>
         <section class="row">
             <section class="col-md account-col-1">

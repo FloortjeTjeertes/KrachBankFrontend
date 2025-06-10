@@ -1,12 +1,10 @@
 <script setup>
-// import { useUserStore } from '../../stores/userStore';
 const emit  = defineEmits(['change']);
-// const userStore = useUserStore();
-// if(!userStore.getUser) {
-//     console.warn("No user found in store, please login first.");
-//     emit('change', 'login'); // Emit an event to change to login view if no user is found
-// }
-
+import { useRouter } from "vue-router";
+const router = useRouter();
+const goToNewTransaction = () => {
+  router.push("/transactions/new"); // Change to your desired route
+};
 </script>
 
 <template>
@@ -18,12 +16,20 @@ const emit  = defineEmits(['change']);
             <li><p @click="emit('change', 'overview')">Overview</p></li>
             <li><p @click="emit('change', 'transactions')">Transactions</p></li>
         </ul>
-      
+      <button class="transactionButton" @click="goToNewTransaction">new Transaction</button>
     </article>
 </template>
 
 
 
 <style lang="css" scoped>
- 
+ .transactionButton {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+ }
 </style>

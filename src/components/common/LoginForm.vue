@@ -113,8 +113,10 @@ export default {
       // Store token only if present
       if (token) {
         if (this.rememberMe) {
+          sessionStorage.removeItem("token");
           localStorage.setItem("token", token);
         } else {
+          localStorage.removeItem("token");
           sessionStorage.setItem("token", token);
         }
       }

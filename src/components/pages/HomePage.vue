@@ -6,7 +6,7 @@
        <section class="maincontent col-xs-12 col-md-10">
             <AccountOverview v-if="active === 'overview'"/>
             <TransactionOverview v-else-if="active === 'transactions'" />
-            <AccountOverview v-else-if="active === 'ibanFinder'" />
+            <TransactionForm v-else-if="active === 'transactionForm'" />
         </section>
     </div>
 </template>
@@ -14,6 +14,7 @@
 import OverviewMenu from "../menus/OverViewMenu.vue";
 import AccountOverview from "../common/AccountOverview.vue";
 import TransactionOverview from "../common/TransactionOverview.vue";
+import TransactionForm from "./TransactionPage.vue";
 import { ref } from "vue";
 let active = ref("overview");
 
