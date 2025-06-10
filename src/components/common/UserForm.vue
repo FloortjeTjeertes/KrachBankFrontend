@@ -1,7 +1,12 @@
 <template>
   <form @submit.prevent="handleSubmit">
     <div v-if="disableCancel" style="background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 1em; margin-bottom: 1em; border-radius: 4px;">
-      <strong>Action required:</strong> Please set the <b>Transfer Limit</b> and <b>Daily Limit</b> for this user before verifying.
+      <strong>Actie vereist:</strong> Deze gebruiker is zojuist geverifieerd.<br>
+      Vul hieronder de <b>Absolute Limiet</b> (Transfer Limit) en <b>Dagelijkse Limiet</b> (Daily Limit) in.<br>
+      <span style="font-size:0.95em;">
+        De absolute limiet bepaalt het minimale saldo dat deze gebruiker mag hebben (mag niet onder deze waarde komen).<br>
+        De dagelijkse limiet bepaalt hoeveel deze gebruiker maximaal per dag mag overboeken.
+      </span>
     </div>
     <div>
       <label>First name:</label>
@@ -31,6 +36,10 @@
       <label>Daily Limit:</label>
       <input v-model="dailyLimit" type="number" required />
     </div>
+    <div>
+      <label>Password:</label>
+      <input v-if="!isUpdate" v-model="password" type="password" required />
+    </div>
     <button type="submit">{{ !isUpdate ? 'Create' : 'Update' }}</button>
     <button type="button" @click="handleCancel" :disabled="disableCancel">Cancel</button>
   </form>
@@ -40,7 +49,8 @@
 import { ref, watch, toRefs } from "vue";
 import { useMutation } from "@tanstack/vue-query";
 import { register } from "../../queries/authentication";
-import { updateUser } from "../../queries/users";
+import { updateUser, verifyUser } from "../../queries/users";
+import { createAccount } from "../../queries/accounts"; // importeer createAccount
 
 const props = defineProps({
   user: {
@@ -68,6 +78,7 @@ const phonenumber = ref("");
 const bsn = ref("");
 const transferLimit = ref("");
 const dailyLimit = ref("");
+const password = ref("");
 
 // Populate form when user prop changes (only for update mode)
 watch(
@@ -78,7 +89,7 @@ watch(
       lastname.value = val.lastName || "";
       email.value = val.email || "";
       phonenumber.value = val.phoneNumber || "";
-      bsn.value = val.BSN || "";
+      bsn.value = val.bsn || "";
       transferLimit.value = val.transferLimit || "";
       dailyLimit.value = val.dailyLimit !== undefined ? val.dailyLimit : val.transferLimit || "";
     }
@@ -90,17 +101,11 @@ watch(
       bsn.value = "";
       transferLimit.value = "";
       dailyLimit.value = "";
+      password.value = "";
     }
   },
   { immediate: true }
 );
-
-// Keep dailyLimit in sync with transferLimit if dailyLimit is empty or equal to transferLimit
-function syncDailyLimit() {
-  if (!isUpdate.value || dailyLimit.value === "" || dailyLimit.value === user.value?.transferLimit) {
-    dailyLimit.value = transferLimit.value;
-  }
-}
 
 const createUserMutation = useMutation({
   mutationFn: (userData) => register(userData),
@@ -111,20 +116,39 @@ const createUserMutation = useMutation({
 
 const updateUserMutation = useMutation({
   mutationFn: ({ userId, userData }) => updateUser(userId, userData),
-  onSuccess: () => {
+  onSuccess: async (_, variables) => {
+    // Als disableCancel true is, voer dan ook verifyUser uit na update
+    if (disableCancel.value) {
+      await verifyUser(variables.userId);
+      // Maak direct na verificatie de accounts aan
+      // Je kunt hier meerdere accounts aanmaken indien gewenst
+      await createAccount({
+        ownerId: variables.userId,
+        type: "CHECKING",
+        absoluteLimit: Number(transferLimit.value),
+      });
+      await createAccount({
+        ownerId: variables.userId,
+        type: "SAVINGS",
+        absoluteLimit: 0,
+      });
+    }
     emit("success");
   },
 });
 
 function handleSubmit() {
   const userData = {
-    firstname: firstname.value,
-    lastname: lastname.value,
+    firstName: firstname.value,
+    lastName: lastname.value,
     email: email.value,
-    phonenumber: phonenumber.value,
+    phoneNumber: phonenumber.value,
     bsn: bsn.value,
-    transferLimit: transferLimit.value,
-    dailyLimit: dailyLimit.value,
+    transferLimit: Number(transferLimit.value),
+    dailyLimit: Number(dailyLimit.value),
+    // Voeg deze regel toe:
+    active: user.value?.active !== undefined ? user.value.active : true,
+    ...(isUpdate.value ? {} : { password: password.value }),
   };
   if (!isUpdate.value) {
     createUserMutation.mutate(userData);

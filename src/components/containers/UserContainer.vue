@@ -9,13 +9,13 @@ import {
   fetchUsers,
   verifyUser,
   deleteUser,
+  updateUser, // <-- voeg deze import toe!
   // You may want to implement/createUser in users.js if not present
 } from "../../queries/users.js";
 
 const queryClient = useQueryClient();
 const showCreateForm = ref(false);
 const showUpdateForm = ref(false);
-const userToUpdate = ref(null);
 
 // State for showing verification table instead of users table
 const showVerificationTable = ref(false);
@@ -23,12 +23,15 @@ const showVerificationTable = ref(false);
 const filterText = ref("");
 const filterDebounced = ref("");
 
+// Nieuwe filter state voor key/value filtering
+const filterKey = ref("firstName"); // standaard 'firstName'
+
 // Add router instance
 const router = useRouter();
 
 // Debounce filterText to filterDebounced (simple debounce)
 let debounceTimeout;
-watch(filterText, (val) => {
+watch([filterText, filterKey], ([val, key]) => {
   clearTimeout(debounceTimeout);
   debounceTimeout = setTimeout(() => {
     filterDebounced.value = val;
@@ -37,8 +40,16 @@ watch(filterText, (val) => {
 
 // Use filterDebounced in the query
 const { isLoading, isError, data, error } = useQuery({
-  queryKey: ["users", filterDebounced],
-  queryFn: () => fetchUsers(filterDebounced.value ? { search: filterDebounced.value } : {}),
+  queryKey: ["users", filterKey, filterDebounced, showVerificationTable],
+  queryFn: () => {
+    let params = {};
+    if (showVerificationTable.value) {
+      params.verified = false;
+    } else if (filterDebounced.value && filterKey.value) {
+      params[filterKey.value] = filterDebounced.value;
+    }
+    return fetchUsers(params);
+  },
 });
 
 // Verify user mutation
@@ -58,6 +69,23 @@ const deleteUserMutation = useMutation({
   },
 });
 
+// Reactivate user mutation
+const reactivateUserMutation = useMutation({
+  mutationFn: (user) => {
+    // Stuur de volledige user data mee, maar forceer active: true
+    return updateUser(user.id, { ...user, active: true });
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["users"] });
+  },
+});
+
+// Local state for delete/reactivate confirmation dialogs
+const showDeleteDialog = ref(false);
+const userToDelete = ref(null);
+const showReactivateDialog = ref(false);
+const userToReactivate = ref(null);
+
 // Example handlers
 function onUpdateUser(user) {
   // Route to FormPage for update
@@ -65,9 +93,22 @@ function onUpdateUser(user) {
 }
 
 function onDeleteUser(user) {
-  if (confirm(`Delete user ${user.name || user.firstname}?`)) {
-    deleteUserMutation.mutate(user.id);
+  userToDelete.value = user;
+  showDeleteDialog.value = true;
+}
+
+// New confirm and cancel handlers for delete dialog
+function confirmDeleteUser() {
+  if (userToDelete.value) {
+    deleteUserMutation.mutate(userToDelete.value.id);
+    showDeleteDialog.value = false;
+    userToDelete.value = null;
   }
+}
+
+function cancelDeleteUser() {
+  showDeleteDialog.value = false;
+  userToDelete.value = null;
 }
 
 // Route to FormPage for create
@@ -84,14 +125,32 @@ function onOpenVerificationTable() {
 function onVerifyUser(user) {
   verifyUserMutation.mutate(user, {
     onSuccess: () => {
-      // After verification, route to update form for setting limits
-      router.push(`/admin/users/form/${user.id}`);
+      // Na verificatie, route naar update form met verify=1 query param
+      router.push({ path: `/admin/users/form/${user.id}`, query: { verify: "1" } });
     }
   });
 }
 
 function onCloseVerificationTable() {
   showVerificationTable.value = false;
+}
+
+function onReactivateUser(user) {
+  userToReactivate.value = user;
+  showReactivateDialog.value = true;
+}
+
+function confirmReactivateUser() {
+  if (userToReactivate.value) {
+    reactivateUserMutation.mutate(userToReactivate.value);
+    showReactivateDialog.value = false;
+    userToReactivate.value = null;
+  }
+}
+
+function cancelReactivateUser() {
+  showReactivateDialog.value = false;
+  userToReactivate.value = null;
 }
 
 </script>
@@ -105,11 +164,16 @@ function onCloseVerificationTable() {
   <div style="margin: 1em 0;">
     <label>
       Filter users:
+      <select v-model="filterKey" :disabled="showCreateForm || showUpdateForm || showVerificationTable" style="margin-right:0.5em;">
+        <option value="firstName">First name</option>
+        <option value="lastName">Last name</option>
+        <option value="email">Email</option>
+      </select>
       <textarea
         v-model="filterText"
         rows="2"
         cols="40"
-        placeholder="Type to filter users by any field..."
+        placeholder="Type to filter users by selected field..."
         :disabled="showCreateForm || showUpdateForm || showVerificationTable"
       ></textarea>
     </label>
@@ -126,10 +190,84 @@ function onCloseVerificationTable() {
     <button @click="onCloseVerificationTable" style="margin-top:1em;">Close Verification Table</button>
   </div>
   <UsersTable
-    v-else-if="data && data.length && !showCreateForm && !showUpdateForm && !showVerificationTable"
+    v-else-if="data && data.length > 0 && !showCreateForm && !showUpdateForm && !showVerificationTable"
     :users="data"
     @update="onUpdateUser"
     @delete="onDeleteUser"
+    @reactivate="onReactivateUser"
   />
-  <div v-else-if="!showCreateForm && !showUpdateForm && !showVerificationTable">No users found!</div>
+  <!-- Custom Delete Dialog -->
+  <div v-if="showDeleteDialog" class="modal-overlay">
+    <div class="modal-dialog">
+      <h3>Bevestig verwijderen gebruiker</h3>
+      <p>
+        Weet je zeker dat je deze gebruiker wilt verwijderen?<br>
+        <b>Naam:</b> {{ userToDelete?.firstName }} {{ userToDelete?.lastName }}<br>
+        <b>Email:</b> {{ userToDelete?.email }}<br>
+        <b>ID:</b> {{ userToDelete?.id }}
+      </p>
+      <div class="modal-actions">
+        <button @click="confirmDeleteUser" class="danger">Verwijderen</button>
+        <button @click="cancelDeleteUser">Annuleren</button>
+      </div>
+    </div>
+  </div>
+  <!-- Custom Reactivate Dialog -->
+  <div v-if="showReactivateDialog" class="modal-overlay">
+    <div class="modal-dialog">
+      <h3>Bevestig reactivatie gebruiker</h3>
+      <p>
+        Weet je zeker dat je deze gebruiker wilt heractiveren?<br>
+        <b>Naam:</b> {{ userToReactivate?.firstName }} {{ userToReactivate?.lastName }}<br>
+        <b>Email:</b> {{ userToReactivate?.email }}<br>
+        <b>ID:</b> {{ userToReactivate?.id }}
+      </p>
+      <div class="modal-actions">
+        <button @click="confirmReactivateUser" class="danger" style="background:#388e3c;">Heractiveren</button>
+        <button @click="cancelReactivateUser">Annuleren</button>
+      </div>
+    </div>
+  </div>
+  <div v-else-if="!showCreateForm && !showUpdateForm && !showVerificationTable && data && data.length === 0">
+    No users found!
+  </div>
 </template>
+
+<style scoped>
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-dialog {
+  background: #fff;
+  border-radius: 8px;
+  padding: 2em 2.5em;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.25);
+  min-width: 320px;
+  max-width: 90vw;
+  text-align: center;
+}
+.modal-actions {
+  margin-top: 1.5em;
+  display: flex;
+  justify-content: center;
+  gap: 1.5em;
+}
+button.danger {
+  background: #d32f2f;
+  color: #fff;
+  border: none;
+  padding: 0.7em 1.5em;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+button.danger:hover {
+  background: #b71c1c;
+}
+</style>
