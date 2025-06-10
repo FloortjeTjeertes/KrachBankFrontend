@@ -11,6 +11,7 @@
           <th>Daily Limit</th>
           <th>Update</th>
           <th>Delete</th>
+          <th>Transactions</th>
         </tr>
       </thead>
       <tbody>
@@ -19,14 +20,18 @@
           <td>{{ user.lastName }}</td>
           <td>{{ user.email }}</td>
           <td>{{ user.phoneNumber }}</td>
-          <td>{{ user.BSN }}</td>
+          <td>{{ user.bsn }}</td>
           <td>{{ user.transferLimit }}</td>
-          <td>{{ user.dailyLimit ?? user.transferLimit }}</td>
+          <td>{{ user.dailyLimit}}</td>
           <td>
             <button @click="$emit('update', user)">Update</button>
           </td>
           <td>
-            <button @click="$emit('delete', user)">Delete</button>
+            <button v-if="user.active !== false" @click="$emit('delete', user)">Delete</button>
+            <button v-else @click="$emit('reactivate', user)">Reactivate</button>
+          </td>
+          <td>
+            <button @click="$emit('view-transactions', user)">Transactions</button>
           </td>
         </tr>
       </tbody>
@@ -40,5 +45,5 @@
       required: true,
     },
   });
-  defineEmits(["update", "delete"]);
+  defineEmits(["update", "delete", "reactivate", "view-transactions"]);
   </script>

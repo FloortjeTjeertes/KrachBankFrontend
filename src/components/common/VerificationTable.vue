@@ -18,7 +18,7 @@
           <td>{{ user.lastName }}</td>
           <td>{{ user.email }}</td>
           <td>{{ user.phoneNumber }}</td>
-          <td>{{ user.BSN }}</td>
+          <td>{{ user.bsn }}</td>
           <td>{{ user.transferLimit }}</td>
           <td>{{ user.dailyLimit ?? user.transferLimit }}</td>
           <td>
