@@ -1,13 +1,11 @@
-import { createWebHashHistory, createRouter } from "vue-router/auto-routes";
+import {  createRouter } from "vue-router/auto-routes";
 
 import HomePage from "./components/pages/HomePage.vue";
 import AdminPage from "./components/pages/AdminPage.vue";
 import FormPage from "./components/pages/FormPage.vue";
 import LoginPage from "./components/pages/LoginPage.vue";
 import TransactionPage from "./components/pages/TransactionPage.vue";
-import VerifiedPage from "./components/pages/VerifiedPage.vue";
 import NotVerifiedPage from "./components/pages/NotVerifiedPage.vue";
-import ATMPage from "./components/pages/ATMPage.vue";
 import AccountPage from "./components/pages/AccountPage.vue";
 import { createWebHistory } from "vue-router";
 import { useUserStore } from "./stores/userStore"; // adjust path if needed]
