@@ -120,18 +120,21 @@ const updateUserMutation = useMutation({
     // Als disableCancel true is, voer dan ook verifyUser uit na update
     if (disableCancel.value) {
       await verifyUser(variables.userId);
-      // Maak direct na verificatie de accounts aan
-      // Je kunt hier meerdere accounts aanmaken indien gewenst
-      await createAccount({
-        ownerId: variables.userId,
-        type: "CHECKING",
-        absoluteLimit: Number(transferLimit.value),
-      });
-      await createAccount({
-        ownerId: variables.userId,
-        type: "SAVINGS",
-        absoluteLimit: 0,
-      });
+      // Maak direct na verificatie de accounts aan met een enkele request (array van accounts)
+      await createAccount([
+        {
+          balance: 1000.0,
+          absoluteLimit: -100.0,
+          transactionLimit: 500.0,
+          userId: String(variables.userId)
+        },
+        {
+          balance: 2000.0,
+          absoluteLimit: -200.0,
+          transactionLimit: 1000.0,
+          userId: String(variables.userId)
+        }
+      ]);
     }
     emit("success");
   },

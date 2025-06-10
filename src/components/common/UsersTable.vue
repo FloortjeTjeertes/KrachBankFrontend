@@ -11,6 +11,7 @@
           <th>Daily Limit</th>
           <th>Update</th>
           <th>Delete</th>
+          <th>Transactions</th>
         </tr>
       </thead>
       <tbody>
@@ -29,6 +30,9 @@
             <button v-if="user.active !== false" @click="$emit('delete', user)">Delete</button>
             <button v-else @click="$emit('reactivate', user)">Reactivate</button>
           </td>
+          <td>
+            <button @click="$emit('view-transactions', user)">Transactions</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -41,5 +45,5 @@
       required: true,
     },
   });
-  defineEmits(["update", "delete", "reactivate"]);
+  defineEmits(["update", "delete", "reactivate", "view-transactions"]);
   </script>

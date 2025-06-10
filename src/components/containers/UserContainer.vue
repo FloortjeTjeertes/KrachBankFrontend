@@ -2,6 +2,7 @@
 import Loading from "../common/Loading.vue";
 import UsersTable from "../common/UsersTable.vue";
 import VerificationTable from "../common/VerificationTable.vue";
+import TransactionsTable from "../common/TransactionsTable.vue";
 import { ref, watch } from "vue";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { useRouter } from "vue-router";
@@ -12,6 +13,7 @@ import {
   updateUser, // <-- voeg deze import toe!
   // You may want to implement/createUser in users.js if not present
 } from "../../queries/users.js";
+import { fetchUserTransactions } from "../../queries/transactions";
 
 const queryClient = useQueryClient();
 const showCreateForm = ref(false);
@@ -86,6 +88,11 @@ const userToDelete = ref(null);
 const showReactivateDialog = ref(false);
 const userToReactivate = ref(null);
 
+// State for transactions dialog
+const showTransactionsDialog = ref(false);
+const transactionsUser = ref(null);
+const transactionsList = ref([]);
+
 // Example handlers
 function onUpdateUser(user) {
   // Route to FormPage for update
@@ -153,6 +160,25 @@ function cancelReactivateUser() {
   userToReactivate.value = null;
 }
 
+// Handler to view transactions
+async function onViewTransactions(user) {
+  transactionsUser.value = user;
+  showTransactionsDialog.value = true;
+  transactionsList.value = [];
+  try {
+    const txs = await fetchUserTransactions(user.id);
+    transactionsList.value = txs;
+  } catch (e) {
+    transactionsList.value = [];
+  }
+}
+
+function closeTransactionsDialog() {
+  showTransactionsDialog.value = false;
+  transactionsUser.value = null;
+  transactionsList.value = [];
+}
+
 </script>
 
 <template>
@@ -195,6 +221,7 @@ function cancelReactivateUser() {
     @update="onUpdateUser"
     @delete="onDeleteUser"
     @reactivate="onReactivateUser"
+    @view-transactions="onViewTransactions"
   />
   <!-- Custom Delete Dialog -->
   <div v-if="showDeleteDialog" class="modal-overlay">
@@ -225,6 +252,16 @@ function cancelReactivateUser() {
       <div class="modal-actions">
         <button @click="confirmReactivateUser" class="danger" style="background:#388e3c;">Heractiveren</button>
         <button @click="cancelReactivateUser">Annuleren</button>
+      </div>
+    </div>
+  </div>
+  <!-- Transactions Modal -->
+  <div v-if="showTransactionsDialog" class="modal-overlay">
+    <div class="modal-dialog" style="min-width:600px;max-width:90vw;">
+      <h3>Transactions for {{ transactionsUser?.firstName }} {{ transactionsUser?.lastName }} (ID: {{ transactionsUser?.id }})</h3>
+      <TransactionsTable :transactions="transactionsList" />
+      <div class="modal-actions">
+        <button @click="closeTransactionsDialog">Close</button>
       </div>
     </div>
   </div>
