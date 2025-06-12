@@ -133,7 +133,7 @@ router.beforeEach((to, from, next) => {
   }
 
   //check if the user is verified for routes that require verification
-  if (to.meta.requiresVerification && !user.isVerified) {
+  if (to.meta.requiresVerification && !user.verified) {
     return next("/notverified");
   }
 
