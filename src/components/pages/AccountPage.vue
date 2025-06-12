@@ -64,12 +64,7 @@ onMounted(() => {
       "AccountPage mounted, fetching account and transactions for accountId:",
       accountId
     );
-    // Fetch transactions for the current user or a default user
-    // if (!accountId) {
-    //     console.warn("No accountId provided, redirecting to home.");
-    //     router.push({ name: "home" });
-    //     return;
-    // }
+   
     AccountService.getAccountByIban(accountId)
       .then((account) => {
         if (!account) {
