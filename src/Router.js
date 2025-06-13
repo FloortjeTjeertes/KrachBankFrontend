@@ -19,7 +19,7 @@ const routes = [
     path: "/",
     name: "Home",
     component: HomePage,
-    meta: { requiresAdmin: false, public: false, requiresVerification: false },
+    meta: { requiresAdmin: false, public: false, requiresVerification: true },
   },
   {
     path: "/admin",
@@ -123,12 +123,13 @@ router.beforeEach((to, from, next) => {
     return next();
   }
   // Check if the user is authenticated and public
-  if (!isAuthenticated || user === null) {
+  if (!isAuthenticated || user === null ) {
     return next("/login");
   }
 
+  console.log("User is authenticated:", user);
   // Check if the user is an admin for admin routes
-  if (to.meta.requiresAdmin && user.role !== "admin") {
+  if (to.meta.requiresAdmin && !user.admin ) {
     return next("/");
   }
 

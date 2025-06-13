@@ -54,8 +54,6 @@ export default {
   methods: {
     async submitLogin() {
       // Prevent empty username/password
-      console.log('submitLogin called!');
-  console.trace('Call Stack for submitLogin:'); // Add this line
       if (!this.username || !this.password) {
         toast.error("Username and password are required.");
         return;
@@ -108,7 +106,6 @@ export default {
       const userDetails = userResponse.userDetails;
 
       userStore.setUser(userDetails);
-      console.log("User details set in store:", userDetails);
 
       // Store token only if present
       if (token) {
