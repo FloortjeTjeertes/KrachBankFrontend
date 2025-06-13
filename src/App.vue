@@ -15,4 +15,7 @@ import AppHeader from "./components/common/AppHeader.vue";
   </main>
 </template>
 
-<style scoped></style>
+<style scoped>
+
+
+</style>
