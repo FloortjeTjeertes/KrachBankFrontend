@@ -1,4 +1,5 @@
 import transaction from "../queries/transactions";
+import UserService from "./UserService";
 
 async function getTransactionsForAccount(accountId) {
   try {
@@ -11,7 +12,8 @@ async function getTransactionsForAccount(accountId) {
     if (!transactions || transactions.length <= 0) {
       throw new Error("No transactions found for account: " + accountId);
     }
-    return transactions;
+    const fullTransactions = await enrichTransactionsWithOwners(transactions);
+    return fullTransactions;
   } catch (e) {
     throw new Error("Error fetching transactions for account: " + accountId, e);
   }
@@ -76,7 +78,55 @@ function validateIban(iban) {
 }
 
 
+
+async function getTransactionsByUserId(userId) {
+  try {
+    if (!userId) {
+      throw new Error("No userId provided, returning empty array.");
+    }
+    const transactions = await transaction.fetchUserTransactions(userId);
+    if (!transactions || transactions.length <= 0) {
+      throw new Error("No transactions found for user: " + userId);
+    }
+    const fullTransactions =  await enrichTransactionsWithOwners(transactions);
+    return fullTransactions;
+  } catch (e) {
+    throw new Error("Error fetching transactions for user: " + userId, e);
+  }
+}
+
+function validatePagination(pagination) {
+  if (!pagination) {
+    return { };
+  }
+  return {
+    page: pagination.page,
+    limit: pagination.limit,
+  };
+}
+
+async function enrichTransactionsWithOwners(transactions){
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+    return [];
+  }
+  return Promise.all(
+    transactions.map(async (transaction) => {
+        const owner = await UserService.getUserById(transaction.initiator);
+        if (!owner) {
+          console.warn("User not found for transaction:", transaction.id);
+        }
+        transaction.initiator = owner;
+        return transaction ;
+    
+    })
+  );
+
+
+}
+
 export default {
   getTransactionsForAccount,
   sendTransaction,
+  getTransactionsByUserId,
+
 };

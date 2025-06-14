@@ -30,9 +30,9 @@
 </template>
 
 <script>
-import LoginForm from '../common/LoginForm.vue';
-import SignUpForm from '../common/SignUpForm.vue';
-import ATMLoginForm from '../common/ATMLoginForm.vue';
+import LoginForm from '@/components/forms/LoginForm.vue';
+import SignUpForm from '@/components/forms/SignUpForm.vue';
+import ATMLoginForm from '@/components/forms/ATMLoginForm.vue';
 import blueTrumpBackground from '@/assets/bluetrump.png'; 
 export default {
   name: 'LoginContainer',

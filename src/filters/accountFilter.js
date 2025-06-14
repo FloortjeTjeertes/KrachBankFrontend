@@ -13,7 +13,6 @@ export function toAccountFilter(filter) {
   if (!filter) {
     return createAccountFilter();
   }
-  
   return {
     id: filter.id || null,
     iban: filter.iban || null,

@@ -20,7 +20,7 @@ defineProps({
     <tbody>
       <tr v-for="transaction in transactions" v-bind:key="transaction">
         <td>{{ new Date(transaction.createdAt).toLocaleString() }}</td>
-        <td>{{ transaction.initiator }}</td>
+        <td>{{ transaction.initiator.firstName}} {{ transaction.initiator.lastName }}</td>
         <td>{{ transaction.from }}</td>
         <td>{{ transaction.to }}</td>
         <td>{{ transaction.description}}</td>

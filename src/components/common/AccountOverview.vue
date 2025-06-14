@@ -6,19 +6,21 @@
     <p>No bank accounts found.</p>
   </section>
   <section class="accountList" v-else>
+
     <BankAccount
       @click="handleClick(account)"
       v-for="account in bankAccounts"
       :key="account"
-      :bankAccount="account"
-      class="box"
+      :bankAccount="account "
+      class="bank-account"
+      
     />
   </section>
   <!-- TODO: make pagination -->
 </template>
 <script setup>
 import ActionMenu from "../menus/ActionMenu.vue";
-import BankAccount from "../common/BankAccount.vue";
+import BankAccount from "../containers/BankAccountContainer.vue";
 
 import { ref, onMounted, toRaw } from "vue";
 import { useUserStore } from "../../stores/userStore";
@@ -58,13 +60,11 @@ onMounted(() => {
 });
 
 function handleFilter(filterData) {
-  console.log("Filter data received:", filterData);
   let filter = toRaw(filterData);
-  console.log("Filter to be applied:", filter);
+  console.log("Filter data received:", filter);
   AccountService.getAccounts(currentUser, filter)
     .then((accounts) => {
       if (accounts && accounts.length > 0) {
-        // bankAccounts.value = accounts.value;
 
         bankAccounts.value = accounts.map((account) => mapToAccount(account));
         toast.success("Accounts fetched successfully with filter");
@@ -91,14 +91,13 @@ function handleClick(account) {
 
 <style lang="css" scoped>
 .accountList {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  /* max-height: 60%; */
-    overflow: scroll;
+  /* display:grid;
+  grid-template-columns: 1fr 1fr ; */
+  /* grid-gap: 1%; */
+
 }
 .bank-account {
-  width: 50%;
+  width: 50% !important;
 }
 .bank-account:hover {
   background-color: var(--pico-secondary-background);

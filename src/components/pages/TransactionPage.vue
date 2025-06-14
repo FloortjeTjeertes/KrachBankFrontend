@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, toRaw } from "vue";
+import { onMounted, ref } from "vue";
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from "vue-toastification";
 import { useRoute } from "vue-router";
@@ -62,6 +62,7 @@ watch(selectedAccountSend, (newValue) => {
 watch(selectedAccountReceive, (newValue) => {
   console.log("Selected account for receiving:", newValue);
   if (newValue && newValue.iban) {
+    console.log("Selected account for receiving:", newValue);
     Transaction.value.receiverIBAN = newValue.iban;
   }
   else {

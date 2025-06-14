@@ -7,11 +7,10 @@ async function getAccounts(userId, filter, pagination) {
     throw new "No userId provided, returning empty array"();
   }
 
-    const validatedFilter = ValidateFilter(filter);
     const validatedPagination = validatePagination(pagination);
     const response = await accounts.fetchAccountsForUser(
       userId,
-      validatedFilter,
+      filter,
       validatedPagination.page,
       validatedPagination.limit
     );
@@ -49,31 +48,19 @@ async function getAccountByIban(iban) {
 }
 
 async function getAllAccounts(filter, pagination) {
-    const validatedFilter = ValidateFilter(filter);
+    // const validatedFilter = ValidateFilter(filter);
     const validatedPagination = validatePagination(pagination);
-    const response = await accounts.fetchAccounts(validatedFilter, validatedPagination.page, validatedPagination.limit);
+    const response = await accounts.fetchAccounts(filter, validatedPagination.page, validatedPagination.limit);
     if (!response || response.length === 0) {
       throw new Error("No accounts found");
     }
-    console.log("Accounts fetched successfully:", response);
-    const fullAccounts = enrichAccountsWithOwners(response);
+    const fullAccounts =  enrichAccountsWithOwners(response);
     return fullAccounts;
 
 
 }
 
-function ValidateFilter(filter) {
-  if (!filter) {
-    return {};
-  }
-  return {
-    id: filter.id || null,
-    iban: filter.iban || null,
-    balanceMin: filter.balance?.min || null,
-    balanceMax: filter.balance?.max || null,
-    accountType: filter.accountType || null,
-  };
-}
+
 
 function validatePagination(pagination) {
   if (!pagination) {

@@ -63,5 +63,6 @@ defineProps({
 }
 .infoSection {
   font-size: 60%;
+  width: max-content !important;
 }
 </style>

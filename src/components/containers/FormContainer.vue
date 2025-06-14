@@ -1,10 +1,10 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
-import UserForm from '../common/UserForm.vue'
-import { fetchUserById } from '../../queries/users'
+import UserForm from '@/components/forms/UserForm.vue'
+import { fetchUserById } from '@/queries/users'
 import { useQuery } from '@tanstack/vue-query'
-import router from '../../Router'
+import router from '@/Router'
 
 const route = useRoute()
 const isUpdate = computed(() => !!route.params.id)

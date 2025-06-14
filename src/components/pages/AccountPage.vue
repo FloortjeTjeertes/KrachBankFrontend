@@ -4,35 +4,27 @@
     <section class="row">
       <section class="col-md-5">
         <BankAccount :bankAccount="bankAccount"></BankAccount>
-       
       </section>
       <section class="col-md TransactionsTable">
-        <TransactionsTable
-          
-          :transactions="transactionList"
-        />
-         <button
-          class="btn btn-primary"
-          @click="makeNewTransaction()"
-        >
+        <TransactionsTable :transactions="transactionList" />
+        <button class="btn btn-primary" @click="makeNewTransaction()">
           Create Transaction
         </button>
       </section>
-
     </section>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
-import BankAccount from "../common/BankAccount.vue";
-import TransactionsTable from "../common/TransactionsTable.vue";
-import { mapToTransaction } from "../../utils/mappers";
-import { useRoute,useRouter } from "vue-router";
-import { mapToAccount } from "../../utils/mappers.js";
+import BankAccount from "@/components/containers/BankAccountContainer.vue";
+import TransactionsTable from "@/components/common/TransactionsTable.vue";
+import { mapToTransaction } from "@/utils/mappers";
+import { useRoute, useRouter } from "vue-router";
+import { mapToAccount } from "@/utils/mappers.js";
 
-import AccountService from "../../service/AccountService";
-import TransactionService from "../../service/TransactionService";
+import AccountService from "@/service/AccountService";
+import TransactionService from "@/service/TransactionService";
 const router = useRouter();
 const route = useRoute();
 const accountId = route.params.iban;
@@ -53,7 +45,6 @@ const bankAccount = ref({
     img: "https://example.com/checking-icon.png", // Placeholder image URL
   },
 });
-// const userStore = useUserStore();
 
 let transactionList = ref([]);
 
@@ -63,22 +54,14 @@ onMounted(async () => {
       "AccountPage mounted, fetching account and transactions for accountId:",
       accountId
     );
-   
-  
 
-      bankAccount.value = await getAccountByIban(accountId);
-      console.log("Fetched bank account:", bankAccount.value);
-      // Fetch transactions for the account
-      transactionList.value =  await getTransactionsForAccount(accountId);
-
-
-
-      
-      
+    bankAccount.value = await getAccountByIban(accountId);
+    console.log("Fetched bank account:", bankAccount.value);
+    // Fetch transactions for the account
+    transactionList.value = await getTransactionsForAccount(accountId);
   } catch (error) {
     console.error("Error during component mount:", error);
   }
-  
 });
 
 async function getAccountByIban(iban) {
@@ -95,10 +78,15 @@ async function getAccountByIban(iban) {
   }
 }
 
-
-async function  getTransactionsForAccount(accountId) {
+async function getTransactionsForAccount(accountId) {
   try {
-    const transactions = await TransactionService.getTransactionsForAccount(accountId);
+    if (!accountId || typeof accountId !== "string") {
+      console.warn("Invalid account ID:", accountId);
+      return [];
+    }
+    const transactions = await TransactionService.getTransactionsForAccount(
+      accountId
+    );
     if (!transactions || transactions.length <= 0) {
       console.warn("No transactions found for account.");
       return [];
@@ -108,8 +96,6 @@ async function  getTransactionsForAccount(accountId) {
     throw new Error("Error fetching transactions: " + error.message);
   }
 }
-
-
 
 function makeNewTransaction() {
   router.push({
@@ -126,4 +112,3 @@ function makeNewTransaction() {
   font-size: medium;
 }
 </style>
- 
