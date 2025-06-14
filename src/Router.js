@@ -1,77 +1,110 @@
-import { createWebHashHistory, createRouter } from "vue-router/auto-routes";
+import { createRouter, createWebHistory } from "vue-router";
 
-import HomePage from "./components/pages/HomePage.vue";
-import AdminPage from "./components/pages/AdminPage.vue";
-import FormPage from "./components/pages/FormPage.vue";
-import LoginPage from "./components/pages/LoginPage.vue";
-import TransactionPage from "./components/pages/TransactionPage.vue";
-import VerifiedPage from "./components/pages/VerifiedPage.vue";
-import NotVerifiedPage from "./components/pages/NotVerifiedPage.vue";
-import ATMPage from "./components/pages/ATMPage.vue";
 import AccountPage from "./components/pages/AccountPage.vue";
-import { createWebHistory } from "vue-router";
-import { useUserStore } from "./stores/userStore"; // adjust path if needed]
-import atmPage from "./components/pages/ATMPage.vue";
+import AdminPage from "./components/pages/AdminPage.vue";
 import atmOverview from "./components/pages/ATMOverview.vue";
+import atmPage from "./components/pages/ATMPage.vue";
+import FormPage from "./components/pages/FormPage.vue";
+import HomePage from "./components/pages/HomePage.vue";
+import LoginPage from "./components/pages/LoginPage.vue";
+import NotVerifiedPage from "./components/pages/NotVerifiedPage.vue";
+import TransactionPage from "./components/pages/TransactionPage.vue";
+import { useUserStore } from "./stores/userStore";
+import UserContainer from "./components/containers/UserContainer.vue";
+import TransactionsContainer from "./components/containers/TransactionsContainer.vue";
+import AccountsContainer from "./components/containers/AccountsContainer.vue";
 
 const routes = [
-  { path: "/", name: "Home", component: HomePage },
+  {
+    path: "/",
+    name: "Home",
+    component: HomePage,
+    meta: { requiresAdmin: false, public: false, requiresVerification: false },
+  },
   {
     path: "/admin",
-    name: "Admin",
     component: AdminPage,
     children: [
-      { path: "", redirect: "admin/users" },
-      {
-        path: "users",
-        name: "AdminUsers",
-        component: () => import("./components/containers/UserContainer.vue"),
-      },
-            {
-        path: "users/form",
-        name: "AdminUserForm",
-        component: () => import("./components/pages/FormPage.vue"),
-      },
+      { path: "", name: "Admin", redirect: "admin/users" },
+      { path: "users", name: "AdminUsers", component: UserContainer },
+      { path: "users/form", name: "AdminUserForm", component: FormPage },
       {
         path: "users/form/:id",
         name: "AdminUserFormEdit",
-        component: () => import("./components/pages/FormPage.vue"),
+        component: FormPage,
         props: true,
       },
       {
         path: "transactions",
         name: "AdminTransactions",
-        component: () =>
-          import("./components/containers/TransactionsContainer.vue"),
+        component: TransactionsContainer,
       },
-      {
-        path: "accounts",
-        name: "AdminAccounts",
-        component: () =>
-          import("./components/containers/AccountsContainer.vue"),
-      },
-      {
-        path: "atm",
-        name: "AdminATM",
-        component: () => import("./components/pages/ATMPage.vue"),
-      },
-      {
-        path: "atmoverview",
-        name: "AdminATMOverview",
-        component: () => import("./components/pages/ATMOverview.vue"),
-      },
+      { path: "accounts", name: "AdminAccounts", component: AccountsContainer },
+      { path: "atm", name: "AdminATM", component: atmPage },
+      { path: "atmoverview", name: "AdminATMOverview", component: atmOverview },
     ],
+    meta: { requiresAdmin: true, public: false, requiresVerification: true },
   },
-  { path: "/form", name: "Form", component: FormPage },
-  { path: "/account/:iban", name: "AccountDetails", component: AccountPage },
-  { path: "/:pathMatch(.*)*", name: "NotFound", redirect: "/" },
-  { path: "/login", name: "Login", component: LoginPage },
-  { path: "/verified", name: "Verified", redirect: "/" },
-  { path: "/notverified", name: "NotVerified", component: NotVerifiedPage },
-  { path: "/atm", name: "ATM", component: atmPage },
-  { path: "/atmoverview", name: "ATMOverview", component: atmOverview },
-  { path: "/account/:iban/newTransaction", name: "NewAccountTransaction",  component: TransactionPage, props: true,},
-  { path: "/transactions/new",  name: "NewTransaction", component: TransactionPage, },
+  {
+    path: "/form",
+    name: "Form",
+    component: FormPage,
+    meta: { public: false, requiresAdmin: false, requiresVerification: false }, //what is this route for? does it need verification?
+  },
+  {
+    path: "/account/:iban",
+    name: "AccountDetails",
+    component: AccountPage,
+    meta: { public: false, requiresAdmin: false, requiresVerification: true },
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    redirect: "/",
+    meta: { public: true, requiresAdmin: false, requiresVerification: false },
+  },
+  {
+    path: "/login",
+    name: "Login",
+    component: LoginPage,
+    meta: { public: true, requiresAdmin: false, requiresVerification: false },
+  },
+  {
+    path: "/verified",
+    name: "Verified",
+    redirect: "/",
+    meta: { public: false, requiresAdmin: false, requiresVerification: false },
+  },
+  {
+    path: "/notverified",
+    name: "NotVerified",
+    component: NotVerifiedPage,
+    meta: { public: false, requiresAdmin: false, requiresVerification: false },
+  },
+  {
+    path: "/atm",
+    name: "ATM",
+    component: atmPage,
+    meta: { public: false, requiresAdmin: false, requiresVerification: true },
+  },
+  { path: "/atmoverview", name: "ATMOverview", component: atmOverview 
+    , meta: { public: false, requiresAdmin: false, requiresVerification: true } 
+  },
+  {
+  },
+  {
+    path: "/account/:iban/newTransaction",
+    name: "NewAccountTransaction",
+    component: TransactionPage,
+    props: true,
+    meta: { public: false, requiresAdmin: false, requiresVerification: true },
+  },
+  {
+    path: "/transactions/new",
+    name: "NewTransaction",
+    component: TransactionPage,
+    meta: { public: false, requiresAdmin: false, requiresVerification: true },
+  },
 ];
 
 const router = createRouter({
@@ -81,15 +114,29 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore();
-  const isAuthenticated = !!userStore.getUser; // or your actual auth check
+  const user = userStore.getUser;
+  const isAuthenticated = userStore.isAuthenticated;
 
-  // List of routes that do NOT require authentication
-  const publicPages = ["/login", "/verified", "/notverified"];
-  const authRequired = !publicPages.includes(to.path);
+  // List of routes that do NOT require authentication TODO:maybe make this an config or use custom meta field
 
-  if (authRequired && !isAuthenticated) {
+  if (to.meta.public) {
+    return next();
+  }
+  // Check if the user is authenticated and public
+  if (!isAuthenticated || user === null) {
     return next("/login");
   }
+
+  // Check if the user is an admin for admin routes
+  if (to.meta.requiresAdmin && user.role !== "admin") {
+    return next("/");
+  }
+
+  //check if the user is verified for routes that require verification
+  if (to.meta.requiresVerification && !user.verified) {
+    return next("/notverified");
+  }
+
   next();
 });
 

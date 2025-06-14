@@ -1,4 +1,3 @@
-
 import { toAccountFilter } from "../filters/accountFilter";
 import api from "./axios";
 
@@ -27,8 +26,9 @@ export const fetchAccountByIban = async (Iban) => {
   return response.data;
 };
 
-// create a new account
+// create a new account (single or batch)
 export const createAccount = async (accountData) => {
+  // accountData can be a single object or an array of objects
   const response = await api.post("/accounts", accountData);
   return response.data;
 };

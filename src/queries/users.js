@@ -48,8 +48,6 @@ export const fetchUserById = async (userId) => {
 
 // update a user
 export const updateUser = async (userId, userData) => {
-    // Ensure dailyLimit is set
-    if (!userData.dailyLimit) userData.dailyLimit = userData.transferLimit;
     const response = await api.put(`/users/${userId}`, userData);
     return response.data;
   };
