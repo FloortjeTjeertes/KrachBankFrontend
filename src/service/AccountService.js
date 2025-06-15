@@ -6,22 +6,21 @@ async function getAccounts(userId, filter, pagination) {
   if (userId == null || userId <= 0) {
     throw new "No userId provided, returning empty array"();
   }
+  // const validatedFilter = ValidateFilter(filter); TODO: implement filter validation
+  const validatedPagination = validatePagination(pagination);
+  const response = await accounts.fetchAccountsForUser(
+    userId,
+    filter,
+    validatedPagination.page,
+    validatedPagination.limit
+  );
+  if (!response || response.length === 0) {
+    throw new Error("No accounts found for userId:", userId);
+  }
 
-    const validatedPagination = validatePagination(pagination);
-    const response = await accounts.fetchAccountsForUser(
-      userId,
-      filter,
-      validatedPagination.page,
-      validatedPagination.limit
-    );
-    if (!response || response.length === 0) {
-      throw new Error("No accounts found for userId:", userId);
-    }
+  const fullAccounts = enrichAccountsWithOwners(response);
 
-    const fullAccounts = enrichAccountsWithOwners(response);
-
-    return fullAccounts;
-  
+  return fullAccounts;
 }
 
 async function getAccountByIban(iban) {
@@ -48,30 +47,29 @@ async function getAccountByIban(iban) {
 }
 
 async function getAllAccounts(filter, pagination) {
-    // const validatedFilter = ValidateFilter(filter);
-    const validatedPagination = validatePagination(pagination);
-    const response = await accounts.fetchAccounts(filter, validatedPagination.page, validatedPagination.limit);
-    if (!response || response.length === 0) {
-      throw new Error("No accounts found");
-    }
-    const fullAccounts =  enrichAccountsWithOwners(response);
-    return fullAccounts;
-
-
+  // const validatedFilter = ValidateFilter(filter); TODO: implement filter validation
+  const validatedPagination = validatePagination(pagination);
+  const response = await accounts.fetchAccounts(
+    filter,
+    validatedPagination.page,
+    validatedPagination.limit
+  );
+  if (!response || response.length === 0) {
+    throw new Error("No accounts found");
+  }
+  const fullAccounts = enrichAccountsWithOwners(response);
+  return fullAccounts;
 }
-
-
 
 function validatePagination(pagination) {
   if (!pagination) {
-    return { };
+    return {};
   }
   return {
     page: pagination.page,
     limit: pagination.limit,
   };
 }
-
 
 async function enrichAccountsWithOwners(accountsList) {
   if (!Array.isArray(accountsList) || accountsList.length === 0) {
@@ -88,7 +86,6 @@ async function enrichAccountsWithOwners(accountsList) {
     })
   );
 }
-
 
 export default {
   getAccounts,

@@ -5,12 +5,18 @@
       v-if="transactionList && transactionList.length > 0"
       :transactions="transactionList"
     />
+    <PaginationGroup
+      :current-page="1"
+      :total-pages="1"
+      @prev="getTransactionsForUser(accountId)"
+      @next="getTransactionsForUser(accountId)"/>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
 import TransactionsTable from "./TransactionsTable.vue";
+import PaginationGroup from "./PaginationGroup.vue";
 import transactionService from "@/service/TransactionService";
 import { mapToTransaction } from "@/utils/mappers";
 import { useToast } from "vue-toastification";
@@ -18,10 +24,9 @@ import { useUserStore } from "@/stores/userStore";
 const toast = useToast();
 const userStore = useUserStore();
 
-var accountId = userStore.getUser?.id; // Default account ID, replace with actual logic to get current account ID
+var accountId = userStore.getUser?.id; 
 
 let transactionList = ref([]);
-// const userStore = useUserStore();
 
 onMounted(async () => {
   try {

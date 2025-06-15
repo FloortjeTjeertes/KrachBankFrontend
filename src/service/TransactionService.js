@@ -79,11 +79,12 @@ function validateIban(iban) {
 
 
 
-async function getTransactionsByUserId(userId) {
+async function getTransactionsByUserId(userId, pagination) {
   try {
     if (!userId) {
       throw new Error("No userId provided, returning empty array.");
     }
+    const validatedPagination = validatePagination(pagination);
     const transactions = await transaction.fetchUserTransactions(userId);
     if (!transactions || transactions.length <= 0) {
       throw new Error("No transactions found for user: " + userId);

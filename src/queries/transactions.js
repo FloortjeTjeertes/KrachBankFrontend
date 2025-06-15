@@ -2,8 +2,17 @@
 import api from "./axios";
 
 // Fetch all transactions
-export const fetchTransactions = async () => {
-  const response = await api.get("/transactions");
+export const fetchTransactions = async (filter,page,limit) => {
+  if (!filter) {
+    filter = {};
+  }
+  if (page && limit) {
+    filter.page = page; // Add pagination parameters
+    filter.limit = limit;
+  }
+  const response = await api.get("/transactions",{
+    params: filter, // Pass the filter as query parameters
+  });
  
   return validateResponse(response);
 };
@@ -17,22 +26,51 @@ export const addTransaction = async (transaction) => {
 };
 
 // fetch user transactions
-export const fetchUserTransactions = async (userId) => {
-  const response = await api.get(`/users/${userId}/transactions`);
+export const fetchUserTransactions = async (userId,filter,page,limit) => {
+  if (!filter) {
+    filter = {};
+  }
+  if (page && limit) {
+    filter.page = page; 
+    filter.limit = limit;
+  }
+
+  
+  const response = await api.get(`/users/${userId}/transactions`,
+    {
+      params: filter, 
+    }
+  );
 
   return validateResponse(response);
 };
 
-export const fetchUserTransactionsForAccount = async (userId,Iban) => {
+export const fetchUserTransactionsForAccount = async (userId,filter,Iban,page,limit) => {
+    if (!filter) {
+    filter = {};
+  }
+  if(page && limit) {
+    filter.page = page; 
+    filter.limit = limit;
+  }
+  filter.IBAN = Iban; 
   const response = await api.get(`/users/${userId}/transactions`, {
-    params: {IBAN: Iban}
+    params: filter 
   });
   return response.data;
 };
 
-export const fetchTransactionsForAccount = async (Iban) => {
+export const fetchTransactionsForAccount = async (Iban,filter,page,limit) => {
+  if (!filter) {
+    filter = {};
+  }
+  if (page && limit) {
+    filter.page = page; 
+    filter.limit = limit;
+  }
+  filter.IBAN = Iban; 
   const response = await api.get(`/transactions`, {
-    params: {IBAN: Iban}
+    params: filter 
   });
   return validateResponse(response);
 };
