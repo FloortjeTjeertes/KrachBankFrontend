@@ -20,12 +20,11 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from "vue-toastification";
 import { useRoute } from "vue-router";
 import TransactionDropDown from "@/components/common/TransactionDropDown.vue";
-import { watch } from "vue";
 import transactionService from "@/service/TransactionService.js";
 
 const userStore = useUserStore();
@@ -50,9 +49,8 @@ onMounted(() => {
 });
 
 watch(selectedAccountSend, (newValue) => {
-  console.log("Selected account for sending:", newValue);
-  if (newValue && newValue.iban) {
-    Transaction.value.senderIBAN = newValue.iban;
+  if (newValue && newValue.IBAN) {
+    Transaction.value.senderIBAN = newValue.IBAN;
   }
   else {
     Transaction.value.senderIBAN = "";
@@ -60,10 +58,8 @@ watch(selectedAccountSend, (newValue) => {
 });
 
 watch(selectedAccountReceive, (newValue) => {
-  console.log("Selected account for receiving:", newValue);
-  if (newValue && newValue.iban) {
-    console.log("Selected account for receiving:", newValue);
-    Transaction.value.receiverIBAN = newValue.iban;
+  if (newValue && newValue.IBAN) {
+    Transaction.value.receiverIBAN = newValue.IBAN;
   }
   else {
     Transaction.value.receiverIBAN = "";

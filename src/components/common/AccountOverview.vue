@@ -6,14 +6,12 @@
     <p>No bank accounts found.</p>
   </section>
   <section class="accountList" v-else>
-
     <BankAccount
       @click="handleClick(account)"
       v-for="account in bankAccounts"
       :key="account"
-      :bankAccount="account "
+      :bankAccount="account"
       class="bank-account"
-      
     />
   </section>
   <!-- TODO: make pagination -->
@@ -38,46 +36,48 @@ const bankAccounts = ref([]);
 
 const currentUser = userStore.getUser?.id;
 
-onMounted(() => {
-  AccountService.getAccounts(currentUser)
-    .then((accounts) => {
-      if (!accounts && accounts.length <= 0) {
-        toast.warning("No accounts found or error fetching accounts.");
-        console.warn("No accounts found or error fetching accounts.");
-        return;
-      }
-      if (!Array.isArray(accounts)) {
-        toast.error("Unexpected response format for accounts.");
-        console.error("Unexpected response format for accounts:", accounts);
-        return;
-      }
-      bankAccounts.value = accounts.map((account) => mapToAccount(account));
-    })
-    .catch((error) => {
-      toast.error(error.message || "Error fetching accounts");
-      console.error("Error during account fetch:", error);
-    });
+onMounted(async () => {
+  try {
+    const accounts = await AccountService.getAccounts(currentUser);
+
+    console.log("Accounts fetched successfully:", accounts);
+    if (!accounts || accounts.items.length <= 0) {
+      toast.warning("No accounts found or error fetching accounts.");
+      console.warn("No accounts found or error fetching accounts.");
+      return;
+    }
+    const items = accounts.items; // Handle both cases where items is an array or the response is directly an array
+    if (!items) {
+      throw new Error("No items found in the response.");
+    }
+
+    bankAccounts.value = items.map((account) => mapToAccount(account));
+  } catch (error) {
+    toast.error(error.message || "Error fetching accounts");
+    console.error("Error during account fetch:", error);
+  }
 });
 
-function handleFilter(filterData) {
+async function handleFilter(filterData) {
   let filter = toRaw(filterData);
   console.log("Filter data received:", filter);
-  AccountService.getAccounts(currentUser, filter)
-    .then((accounts) => {
-      if (accounts && accounts.length > 0) {
+  try {
+    const accounts = await AccountService.getAccounts(currentUser, filter);
+    console.log("Accounts fetched with filter:", accounts);
+    if (!accounts && accounts.items.length < 0) {
+      console.warn("No accounts found or error fetching accounts with filter.");
+    }
 
-        bankAccounts.value = accounts.map((account) => mapToAccount(account));
-        toast.success("Accounts fetched successfully with filter");
-      } else {
-        console.warn(
-          "No accounts found or error fetching accounts with filter."
-        );
-      }
-    })
-    .catch((error) => {
-      toast.error(error.message || "Error fetching accounts with filter");
-      console.error("Error during account fetch with filter:", error);
-    });
+    const items = accounts.items; 
+    if (!items) {
+      throw new Error("No items found in the response.");
+    }
+    bankAccounts.value = items.map((account) => mapToAccount(account));
+    toast.success("Accounts fetched successfully with filter");
+  } catch (error) {
+    toast.error(error.message || "Error fetching accounts with filter");
+    console.error("Error during account fetch with filter:", error);
+  }
 }
 
 function handleClick(account) {
@@ -94,7 +94,6 @@ function handleClick(account) {
   /* display:grid;
   grid-template-columns: 1fr 1fr ; */
   /* grid-gap: 1%; */
-
 }
 .bank-account {
   width: 50% !important;

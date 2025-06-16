@@ -12,16 +12,30 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+const currentPage = ref(1);
+const totalPages = ref(1);
 const props = defineProps({
-    currentPage: {
-        type: Number,
-        required: true
-    },
-    totalPages: {
+    currentPageProp: {
         type: Number,
         required: true
     }
+   
 });
+watch(() => props.currentPage, 
+(newVal) => {
+    if (newVal < 1) {
+        throw new Error('currentPage must be at least 1');
+
+    }
+    currentPage.value = newVal;
+});
+watch(() => props.totalPages, (newVal) => {
+    if (newVal < 1) {
+        throw new Error('totalPages must be at least 1');
+    }
+    totalPages.value = newVal;
+});
+
 
 </script>
 

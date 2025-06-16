@@ -8,7 +8,7 @@
     </div>
     <div class="col-md infoSection">
       <div class="top-section">
-        <b class="accountType">{{ account.type }} </b>
+        <b class="accountType">{{ account.type.name }} </b>
         <b class="text-center">€ {{ account.balance }}</b>
       </div>
       <div class="bottom-section">

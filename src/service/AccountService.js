@@ -2,6 +2,25 @@ import accounts from "../queries/accounts";
 import UserService from "./UserService";
 //TODO: maybe this should be moved to a store or a separate transaction service
 
+
+/**
+ * Retrieves a list of accounts for a given user, with optional filtering and pagination.
+ *
+ * @async
+ * @function getAccounts
+ * @param {number|string} userId - The unique identifier of the user whose accounts are to be fetched.
+ * @param {Object} [filter] - Optional filter criteria to apply (e.g., account type, status).
+ * @param {Object} [pagination] - Optional pagination settings.
+ * @param {number} [pagination.page] - The page number to retrieve.
+ * @param {number} [pagination.limit] - The number of accounts per page.
+ * @returns {Promise<Array>} A promise that resolves to an array of account objects.
+ * @throws {Error} If no userId is provided or if an error occurs during fetching.
+ *
+ * @example
+ * // Fetch all accounts for user 123, first page, 10 per page
+ * const accounts = await getAccounts(123, {}, { page: 1, limit: 10 });
+ */
+
 async function getAccounts(userId, filter, pagination) {
   if (userId == null || userId <= 0) {
     throw new "No userId provided, returning empty array"();
@@ -18,11 +37,21 @@ async function getAccounts(userId, filter, pagination) {
     throw new Error("No accounts found for userId:", userId);
   }
 
-  const fullAccounts = enrichAccountsWithOwners(response);
+  const fullAccounts = await enrichAccountsWithOwners(response.items);
+  response.items = fullAccounts;
 
-  return fullAccounts;
+  return response;
 }
 
+/**
+ * Retrieves an account by its IBAN and fetches the owner's user details.
+ *
+ * @async
+ * @function
+ * @param {string} iban - The International Bank Account Number (IBAN) of the account to retrieve.
+ * @returns {Promise<Object>} A promise that resolves to the account object with the owner's details included.
+ * @throws {Error} If the IBAN is not provided, the account is not found, or the owner is not found.
+ */
 async function getAccountByIban(iban) {
   try {
     console.log("getAccountByIban called with iban:", iban);
@@ -46,6 +75,18 @@ async function getAccountByIban(iban) {
   }
 }
 
+/**
+ * Retrieves all accounts based on the provided filter and pagination options.
+ * Enriches each account with its owner information.
+ *
+ * @async
+ * @param {Object} filter - The filter criteria for fetching accounts.
+ * @param {Object} pagination - The pagination options.
+ * @param {number} pagination.page - The page number to retrieve.
+ * @param {number} pagination.limit - The number of accounts per page.
+ * @returns {Promise<Object>} The paginated response containing enriched account items.
+ * @throws {Error} If no accounts are found.
+ */
 async function getAllAccounts(filter, pagination) {
   // const validatedFilter = ValidateFilter(filter); TODO: implement filter validation
   const validatedPagination = validatePagination(pagination);
@@ -57,10 +98,20 @@ async function getAllAccounts(filter, pagination) {
   if (!response || response.length === 0) {
     throw new Error("No accounts found");
   }
-  const fullAccounts = enrichAccountsWithOwners(response);
-  return fullAccounts;
+  const fullAccounts = await enrichAccountsWithOwners(response.items);
+
+  response.items = fullAccounts;
+  return response;
 }
 
+/**
+ * Validates and formats a pagination object.
+ *
+ * @param {Object} pagination - The pagination object to validate.
+ * @param {number} pagination.page - The current page number.
+ * @param {number} pagination.limit - The number of items per page.
+ * @returns {Object} An object containing the page and limit properties if pagination is provided, otherwise an empty object.
+ */
 function validatePagination(pagination) {
   if (!pagination) {
     return {};
@@ -71,18 +122,28 @@ function validatePagination(pagination) {
   };
 }
 
-async function enrichAccountsWithOwners(accountsList) {
-  if (!Array.isArray(accountsList) || accountsList.length === 0) {
+/**
+ * Enriches an array of account objects by replacing the `owner` property (user ID)
+ * with the corresponding user object fetched from the UserService.
+ *
+ * @async
+ * @function
+ * @param {Array<Object>} accountObject - Array of account objects, each containing an `owner` property (user ID).
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of account objects with the `owner` property replaced by the user object or `null` if not found.
+ */
+async function enrichAccountsWithOwners(accountObject) {
+  if (!Array.isArray(accountObject) || accountObject.length === 0) {
     return [];
   }
 
   return Promise.all(
-    accountsList.map(async (account) => {
+    accountObject.map(async (account) => {
       const owner = await UserService.getUserById(account.owner);
       if (!owner) {
         console.warn("User not found for account:", account.id);
       }
-      return { ...account, owner };
+      account.owner = owner || null; // Ensure owner is set to null if not found
+      return account;
     })
   );
 }

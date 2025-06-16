@@ -6,10 +6,13 @@
       :transactions="transactionList"
     />
     <PaginationGroup
-      :current-page="1"
-      :total-pages="1"
-      @prev="getTransactionsForUser(accountId)"
-      @next="getTransactionsForUser(accountId)"/>
+      :current-page="currentPage"
+      :total-pages="totalPages"
+      @prev="prevPage()"
+      @next="nextPage()"
+      v-model:currentPageProp="currentPage"
+      v-model:total-pages="totalPage"
+    />
   </div>
 </template>
 
@@ -21,42 +24,74 @@ import transactionService from "@/service/TransactionService";
 import { mapToTransaction } from "@/utils/mappers";
 import { useToast } from "vue-toastification";
 import { useUserStore } from "@/stores/userStore";
+import { createPaginationFilter } from "@/filters/paginationFilter";
 const toast = useToast();
 const userStore = useUserStore();
 
-var accountId = userStore.getUser?.id; 
+var accountId = userStore.getUser?.id;
 
 let transactionList = ref([]);
+let currentPage = ref(1);
+let totalPages = ref(1);
+let AmmountPerPage = ref(10);
 
 onMounted(async () => {
   try {
-    // Fetch transactions for the current user or a default user
     transactionList.value = await getTransactionsForUser(accountId);
   } catch (error) {
     console.error("Error during component mount:", error);
   }
 });
 
-async function getTransactionsForUser(userId) {
+
+function nextPage() {
+  console.log("nextPage called");
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+    getTransactionsForUser(accountId, createPaginationFilter(currentPage.value, AmmountPerPage.value));
+    console.log("Current Page:", currentPage.value);
+  }
+  
+}
+
+function prevPage() {
+  console.log("prevPage called");
+  if (currentPage.value > 1) {
+    currentPage.value--;
+    getTransactionsForUser(accountId, createPaginationFilter(currentPage.value, AmmountPerPage.value));
+    console.log("Current Page:", currentPage.value);
+  }
+}
+
+
+async function getTransactionsForUser(userId,filter) {
   try {
-    if (!Number.isInteger(userId)) {
-      console.warn("userId is not an integer:", userId);
-      toast.error("Invalid user ID.");
+   
+    if (!userId) {
+      console.warn("userId is undefined or null");
+      toast.error("User ID is required.");
       return [];
     }
-    const transactions = await transactionService.getTransactionsByUserId(
-      userId
-    );
-
-    if (!transactions || transactions.length === 0) {
-      console.warn("No transactions found for user:", userId);
-      return [];
+    
+    if (!filter) {
+      filter = createPaginationFilter(currentPage.value, AmmountPerPage); // Default to page 1 with 10 items per page
     }
 
-    return transactions.map((transaction) => mapToTransaction(transaction));
-  } catch (e) {
-    console.error("Error fetching transactions for user:", e);
-    toast.error("Error fetching transactions for user: " + e.message);
+
+    const transactions = await transactionService.getTransactionsByUserId(userId, filter); 
+
+    if (!transactions || transactions.items.length <= 0) {
+      throw new Error("No transactions found for user: " + userId);   
+    }
+    const items = transactions.items; // Handle both cases where items is an array or the response is directly an array
+    if (!items) {
+      throw new Error("No items found in the response.");
+    }
+
+    return items.map((transaction) => mapToTransaction(transaction));
+  } catch (error) {
+    console.error("Error fetching transactions for user:", error);
+    toast.error(error.message);
   }
 }
 </script>

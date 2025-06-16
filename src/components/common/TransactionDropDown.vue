@@ -29,6 +29,8 @@
 import SmallAccount from "@/components/containers/SmallAccountContainer.vue";
 import AccountService from "@/service/AccountService.js";
 import { ref, onMounted, watch, defineEmits, defineProps } from "vue";
+import { mapToAccount } from "../../utils/mappers.js";
+
 const SelectedIban = ref("");
 const emit = defineEmits(["update:modelValue"]); // Emit event to update modelValue
 const props = defineProps({
@@ -95,7 +97,6 @@ async function getAccounts() {
 
     return accounts || [];
   } else {
-    console.log("Fetching accounts for all users or no userId provided.");
 
     const accounts = await getAllAccounts();
 
@@ -105,7 +106,16 @@ async function getAccounts() {
 async function getAllAccounts() {
   try {
     const accounts = await AccountService.getAllAccounts(); //TODO: make a method to get all accounts for a user
-    return accounts;
+    if (!accounts || accounts.length === 0) {
+      console.warn("No accounts found.");
+      return [];
+    }
+    const items = accounts.items;
+    if (!items) {
+      throw new Error("No items found in the response.");
+    }
+    console.log("all Accounts fetched successfully:", items);
+    return items.map((account) => mapToAccount(account));
   } catch (error) {
     console.error("Error fetching accounts:", error);
   }
@@ -118,9 +128,13 @@ async function getFilteredAccountsForUser(userId, Iban) {
     }
     const accounts = await AccountService.getAccounts(userId, Iban);
     if (!accounts || accounts.length === 0) {
-      return []; // Return an empty array if no accounts found
+      return [];
     }
-    return accounts.filter((account) => account.owner.id === userId);
+    const items = accounts.items;
+    if (!items) {
+      throw new Error("No items found in the response.");
+    }
+    return items.map((account) => mapToAccount(account));
   } catch (error) {
     console.error("Error fetching accounts:", error);
   }
@@ -132,7 +146,8 @@ watch(
   }
 );
 function setSelectedAccount(account) {
-  if (account && account.iban) {
+  console.log("Selected account:", account);
+  if (account && account.IBAN) {
     SelectedAccount.value = account;
     emit("update:modelValue", account); // Emit the selected account
   } else {
@@ -162,7 +177,6 @@ input.dropdown-search {
   width: 100% !important;
   display: flex;
   align-items: center;
-
 }
 .dropdown-item:hover {
   background-color: var(

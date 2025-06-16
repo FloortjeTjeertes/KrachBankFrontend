@@ -23,6 +23,7 @@ import { mapToTransaction } from "@/utils/mappers";
 import { useRoute, useRouter } from "vue-router";
 import { mapToAccount } from "@/utils/mappers.js";
 
+import { createPaginationFilter } from "@/filters/paginationFilter";
 import AccountService from "@/service/AccountService";
 import TransactionService from "@/service/TransactionService";
 const router = useRouter();
@@ -78,22 +79,31 @@ async function getAccountByIban(iban) {
   }
 }
 
-async function getTransactionsForAccount(accountId) {
+async function getTransactionsForAccount(accountId, filter) {
   try {
-    if (!accountId || typeof accountId !== "string") {
+    if (!accountId) {
       console.warn("Invalid account ID:", accountId);
       return [];
     }
-    const transactions = await TransactionService.getTransactionsForAccount(
-      accountId
-    );
-    if (!transactions || transactions.length <= 0) {
-      console.warn("No transactions found for account.");
-      return [];
+    if (!filter) {
+      // filter = createPaginationFilter(1, 10); // Default to page 1 with 10 items per page
+      filter = null;
     }
-    return transactions.map((transaction) => mapToTransaction(transaction));
+    const transactions = await TransactionService.getTransactionsForAccount(
+      accountId,
+      // filter
+    );
+        console.log("Fetched transactions:", transactions);
+    if (!transactions || transactions.items.length <= 0) {
+      throw new Error("No transactions found for account: " + accountId);
+    }
+    const items = transactions.items; // Handle both cases where items is an array or the response is directly an array
+    if (!items) {
+      throw new Error("No items found in the response.");
+    }
+    return items.map((transaction) => mapToTransaction(transaction));
   } catch (error) {
-    throw new Error("Error fetching transactions: " + error.message);
+    throw new Error(error.message);
   }
 }
 
