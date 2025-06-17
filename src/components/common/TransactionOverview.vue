@@ -1,17 +1,23 @@
 <template>
   <div>
     transaction overview
+    <section class="transactionOverview">
+      
     <TransactionsTable
       v-if="transactionList && transactionList.length > 0"
       :transactions="transactionList"
+      class="transactionTable"
     />
+    
+    </section>
     <PaginationGroup
-      :current-page="currentPage"
-      :total-pages="totalPages"
+      :currentPage="currentPage.value"
+      :totalPages="totalPages.value"
       @prev="prevPage()"
       @next="nextPage()"
       v-model:currentPageProp="currentPage"
-      v-model:total-pages="totalPage"
+      v-model:totalPagesProp="totalPages"
+      class="paginationGroup"
     />
   </div>
 </template>
@@ -33,7 +39,7 @@ var accountId = userStore.getUser?.id;
 let transactionList = ref([]);
 let currentPage = ref(1);
 let totalPages = ref(1);
-let AmmountPerPage = ref(10);
+let AmountPerPage = ref(10);
 
 onMounted(async () => {
   try {
@@ -44,21 +50,24 @@ onMounted(async () => {
 });
 
 
-function nextPage() {
+
+
+async function nextPage() {
   console.log("nextPage called");
   if (currentPage.value < totalPages.value) {
     currentPage.value++;
-    getTransactionsForUser(accountId, createPaginationFilter(currentPage.value, AmmountPerPage.value));
+    transactionList.value = await getTransactionsForUser(accountId, createPaginationFilter(currentPage.value, AmountPerPage.value));
     console.log("Current Page:", currentPage.value);
   }
   
 }
 
-function prevPage() {
+async function prevPage() {
   console.log("prevPage called");
   if (currentPage.value > 1) {
     currentPage.value--;
-    getTransactionsForUser(accountId, createPaginationFilter(currentPage.value, AmmountPerPage.value));
+    transactionList.value = await getTransactionsForUser(accountId, createPaginationFilter(currentPage.value, AmountPerPage.value));
+    console.log("Current Page:", transactionList.value);
     console.log("Current Page:", currentPage.value);
   }
 }
@@ -74,7 +83,7 @@ async function getTransactionsForUser(userId,filter) {
     }
     
     if (!filter) {
-      filter = createPaginationFilter(currentPage.value, AmmountPerPage); // Default to page 1 with 10 items per page
+      filter = createPaginationFilter(currentPage.value, AmountPerPage.value); // Default to page 1 with 10 items per page
     }
 
 
@@ -87,7 +96,10 @@ async function getTransactionsForUser(userId,filter) {
     if (!items) {
       throw new Error("No items found in the response.");
     }
-
+    totalPages.value = transactions.totalPages ; 
+    currentPage.value = transactions.currentPage+1 ; 
+    console.log("Total Pages:", totalPages.value);
+    console.log("Current Page:", currentPage.value);
     return items.map((transaction) => mapToTransaction(transaction));
   } catch (error) {
     console.error("Error fetching transactions for user:", error);
@@ -96,4 +108,19 @@ async function getTransactionsForUser(userId,filter) {
 }
 </script>
 
-<style lang="css" scoped></style>
+<style lang="css" scoped>
+.transactionOverview {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  min-height: 75vh;
+  max-height: 75vh;
+}
+.paginationGroup {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+}
+</style>

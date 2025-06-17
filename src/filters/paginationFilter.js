@@ -1,8 +1,8 @@
 
-export  function createPaginationFilter() {
+export  function createPaginationFilter(page = 1, limit = 10) {
   return {
-    page: 1,
-    limit: 10,
+    page: page,
+    limit: limit,
   };
 }
 export function toPaginationFilter(filter) {
@@ -10,7 +10,7 @@ export function toPaginationFilter(filter) {
     return createPaginationFilter();
   }
   return {
-    page: filter.page || 1,
-    limit: filter.limit || 10,
+    page: filter.page ,
+    limit: filter.limit ,
   };
 }

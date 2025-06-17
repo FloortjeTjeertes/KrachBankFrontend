@@ -22,7 +22,9 @@ async function getTransactionsForAccount(accountId) {
     if (!transactions || transactions.length <= 0) {
       throw new Error("No transactions found for account: " + accountId);
     }
-    const fullTransactions = await enrichTransactionsWithOwners(transactions.items);
+    const fullTransactions = await enrichTransactionsWithOwners(
+      transactions.items
+    );
     transactions.items = fullTransactions;
     return transactions;
   } catch (e) {
@@ -133,19 +135,25 @@ async function getTransactionsByUserId(userId, pagination) {
     if (!userId) {
       throw new Error("No userId provided, returning empty array.");
     }
+    
     const validatedPagination = toPaginationFilter(pagination);
-    const transactions = await transaction.fetchUserTransactions(
-      userId,
-      validatedPagination
-    );
-    if (!transactions || transactions.length <= 0) {
-      throw new Error("No transactions found for user: " + userId);
-    }
-    const fullTransactions = await enrichTransactionsWithOwners(
-      transactions.items
-    );
-    transactions.items = fullTransactions;
-    return transactions;
+          console.log("pagination:", validatedPagination);
+
+      const transactions = await transaction.fetchUserTransactions(
+        userId,
+        null,
+        validatedPagination.page,
+        validatedPagination.limit
+      );
+      if (!transactions || transactions.length <= 0) {
+        throw new Error("No transactions found for user: " + userId);
+      }
+      const fullTransactions = await enrichTransactionsWithOwners(
+        transactions.items
+      );
+      transactions.items = fullTransactions;
+      return transactions;
+    
   } catch (e) {
     throw new Error("Error fetching transactions for user: " + userId, e);
   }

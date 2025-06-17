@@ -19,7 +19,6 @@ export const fetchTransactions = async (filter,page,limit) => {
 
 // Add a new transaction
 export const addTransaction = async (transaction) => {
-  console.log("Adding transaction:", transaction);
   const response = await api.post("/transactions", transaction);
 
   return validateResponse(response);
@@ -68,15 +67,13 @@ export const fetchTransactionsForAccount = async (Iban,filter,page,limit) => {
     filter.page = page; 
     filter.limit = limit;
   }
-  filter.IBAN = Iban; 
-  const response = await api.get(`/transactions`, {
+  const response = await api.get(`/accounts/${Iban}/transactions`, {
     params: filter 
   });
   return validateResponse(response);
 };
 
 function validateResponse(response) {
-  console.log("Validating response:", response.status);
   if (!response || !response.data) {
     throw new Error("Invalid response from server.");
   }

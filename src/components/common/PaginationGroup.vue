@@ -3,7 +3,7 @@
         
         <fieldset  role="group">
             <button type="button" class="btn btn-primary" @click="$emit('prev')">Previous</button>
-            <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
+            <span class="page-info">{{ currentPageProp }} / {{ totalPagesProp }}</span>
             <button type="button" class="btn btn-primary" @click="$emit('next')">Next</button>
         </fieldset>
 
@@ -19,12 +19,17 @@ const props = defineProps({
         type: Number,
         required: true
     }
+    , totalPagesProp: {
+        type: Number,
+        required: true
+    }
    
 });
 watch(() => props.currentPage, 
 (newVal) => {
     if (newVal < 1) {
         throw new Error('currentPage must be at least 1');
+        
 
     }
     currentPage.value = newVal;

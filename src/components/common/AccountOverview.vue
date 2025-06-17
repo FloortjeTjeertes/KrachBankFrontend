@@ -40,7 +40,6 @@ onMounted(async () => {
   try {
     const accounts = await AccountService.getAccounts(currentUser);
 
-    console.log("Accounts fetched successfully:", accounts);
     if (!accounts || accounts.items.length <= 0) {
       toast.warning("No accounts found or error fetching accounts.");
       console.warn("No accounts found or error fetching accounts.");
@@ -60,10 +59,8 @@ onMounted(async () => {
 
 async function handleFilter(filterData) {
   let filter = toRaw(filterData);
-  console.log("Filter data received:", filter);
   try {
     const accounts = await AccountService.getAccounts(currentUser, filter);
-    console.log("Accounts fetched with filter:", accounts);
     if (!accounts && accounts.items.length < 0) {
       console.warn("No accounts found or error fetching accounts with filter.");
     }

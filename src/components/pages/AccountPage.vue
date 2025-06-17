@@ -22,8 +22,8 @@ import TransactionsTable from "@/components/common/TransactionsTable.vue";
 import { mapToTransaction } from "@/utils/mappers";
 import { useRoute, useRouter } from "vue-router";
 import { mapToAccount } from "@/utils/mappers.js";
-
 import { createPaginationFilter } from "@/filters/paginationFilter";
+import {createAccountFilter} from "@/filters/accountFilter";
 import AccountService from "@/service/AccountService";
 import TransactionService from "@/service/TransactionService";
 const router = useRouter();
