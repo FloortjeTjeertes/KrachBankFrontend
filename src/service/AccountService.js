@@ -2,7 +2,6 @@ import accounts from "../queries/accounts";
 import UserService from "./UserService";
 //TODO: maybe this should be moved to a store or a separate transaction service
 
-
 /**
  * Retrieves a list of accounts for a given user, with optional filtering and pagination.
  *
@@ -54,7 +53,6 @@ async function getAccounts(userId, filter, pagination) {
  */
 async function getAccountByIban(iban) {
   try {
-    console.log("getAccountByIban called with iban:", iban);
     if (!iban) {
       throw new Error("IBAN is required");
     }
@@ -70,7 +68,7 @@ async function getAccountByIban(iban) {
 
     return { ...response, owner };
   } catch (error) {
-    console.error("Error fetching account by IBAN:", error);
+    console.error(error);
     throw error; // Re-throw the error for further handling
   }
 }
@@ -139,9 +137,7 @@ async function enrichAccountsWithOwners(accountObject) {
   return Promise.all(
     accountObject.map(async (account) => {
       const owner = await UserService.getUserById(account.owner);
-      if (!owner) {
-        console.warn("User not found for account:", account.id);
-      }
+
       account.owner = owner || null; // Ensure owner is set to null if not found
       return account;
     })

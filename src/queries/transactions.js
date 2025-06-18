@@ -19,22 +19,27 @@ export const fetchTransactions = async (filter,page,limit) => {
 
 // Add a new transaction
 export const addTransaction = async (transaction) => {
+  try{
   const response = await api.post("/transactions", transaction);
 
   return validateResponse(response);
+  }
+  catch (error) {
+    throw new Error(error.response.data.message);
+  }
 };
 
 // fetch user transactions
 export const fetchUserTransactions = async (userId,filter,page,limit) => {
-  if (!filter) {
+
+  try {
+    if (!filter) {
     filter = {};
   }
   if (page && limit) {
     filter.page = page; 
     filter.limit = limit;
   }
-
-  
   const response = await api.get(`/users/${userId}/transactions`,
     {
       params: filter, 
@@ -42,6 +47,10 @@ export const fetchUserTransactions = async (userId,filter,page,limit) => {
   );
 
   return validateResponse(response);
+  } catch (error) {
+    throw new Error(error.response.data.message);
+  }
+  
 };
 
 export const fetchUserTransactionsForAccount = async (userId,filter,Iban,page,limit) => {

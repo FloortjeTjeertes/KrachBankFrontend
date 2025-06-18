@@ -90,7 +90,7 @@ async function getTransactionsForUser(userId,filter) {
     const transactions = await transactionService.getTransactionsByUserId(userId, filter); 
 
     if (!transactions || transactions.items.length <= 0) {
-      throw new Error("No transactions found for user: " + userId);   
+      throw new Error("No transactions found for user");   
     }
     const items = transactions.items; // Handle both cases where items is an array or the response is directly an array
     if (!items) {

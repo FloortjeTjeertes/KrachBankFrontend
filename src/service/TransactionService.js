@@ -2,6 +2,8 @@ import transaction from "../queries/transactions";
 import UserService from "./UserService";
 import { toPaginationFilter } from "@/filters/paginationFilter";
 
+
+
 /**
  * Retrieves and enriches transactions for a specific account.
  *
@@ -14,13 +16,13 @@ import { toPaginationFilter } from "@/filters/paginationFilter";
 async function getTransactionsForAccount(accountId) {
   try {
     if (!accountId) {
-      throw Error("No accountId provided,returning empty array.");
+      throw Error("No accountId provided, returning empty array.");
     }
     const transactions = await transaction.fetchTransactionsForAccount(
       accountId
     );
     if (!transactions || transactions.length <= 0) {
-      throw new Error("No transactions found for account: " + accountId);
+      throw new Error("No transactions found for account");
     }
     const fullTransactions = await enrichTransactionsWithOwners(
       transactions.items
@@ -28,7 +30,7 @@ async function getTransactionsForAccount(accountId) {
     transactions.items = fullTransactions;
     return transactions;
   } catch (e) {
-    throw new Error("Error fetching transactions for account: " + accountId, e);
+    throw new Error(e);
   }
 }
 
@@ -53,7 +55,7 @@ async function sendTransaction(transactionData) {
     console.log("Transaction result:", result);
     if (!result) {
       throw new Error(
-        "Failed to send transaction no value received: " + result.data
+        "Failed to send transaction"
       );
     }
 
@@ -146,7 +148,7 @@ async function getTransactionsByUserId(userId, pagination) {
         validatedPagination.limit
       );
       if (!transactions || transactions.length <= 0) {
-        throw new Error("No transactions found for user: " + userId);
+        throw new Error("No transactions found");
       }
       const fullTransactions = await enrichTransactionsWithOwners(
         transactions.items
@@ -155,7 +157,7 @@ async function getTransactionsByUserId(userId, pagination) {
       return transactions;
     
   } catch (e) {
-    throw new Error("Error fetching transactions for user: " + userId, e);
+    throw new Error(e);
   }
 }
 
@@ -176,7 +178,7 @@ async function enrichTransactionsWithOwners(transactions) {
     transactions.map(async (transaction) => {
       const owner = await UserService.getUserById(transaction.initiator);
       if (!owner) {
-        console.warn("User not found for transaction:", transaction.id);
+        console.warn("User not found for transaction");
       }
       transaction.initiator = owner;
       return transaction;

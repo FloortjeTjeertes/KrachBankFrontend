@@ -75,7 +75,7 @@ async function getAccountByIban(iban) {
 
     return mapToAccount(account);
   } catch (error) {
-    throw new Error("Error fetching account: " + error.message);
+    throw new Error(error.message );
   }
 }
 
