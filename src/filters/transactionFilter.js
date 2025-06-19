@@ -19,11 +19,11 @@ export function toTransactionFilter(filter) {
     return createTransactionFilter();
   }
   return {
-    sender: filter.sender || null,
-    receiver: filter.receiver || null,
-    amountMin: filter.amount?.min || null,
-    amountMax: filter.amount?.max || null,
-    dateBefore: filter.date?.before || null,
-    dateAfter: filter.date?.after || null,
+    senderIban: filter.sender || null,
+    receiverIban: filter.receiver || null,
+    minAmount: filter.amount?.min || null,
+    maxAmount: filter.amount?.max || null,
+    beforeDate: filter.date?.before || null,
+    afterDate: filter.date?.after || null,
   };
 }

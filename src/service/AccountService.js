@@ -32,7 +32,7 @@ async function getAccounts(userId, filter, pagination) {
     validatedPagination.page,
     validatedPagination.limit
   );
-  if (!response || response.length === 0) {
+  if (!response || response.length <= 0) {
     throw new Error("No accounts found for userId:", userId);
   }
 

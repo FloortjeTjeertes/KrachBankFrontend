@@ -52,7 +52,6 @@ async function sendTransaction(transactionData) {
     transactionData = validateNewTransaction(transactionData);
 
     const result = await transaction.addTransaction(transactionData);
-    console.log("Transaction result:", result);
     if (!result) {
       throw new Error(
         "Failed to send transaction"
@@ -132,27 +131,24 @@ function validateIban(iban) {
  * @returns {Promise<Object>} The paginated transactions object with enriched transaction items.
  * @throws {Error} If no userId is provided, if no transactions are found, or if an error occurs during fetching.
  */
-async function getTransactionsByUserId(userId, pagination) {
+async function getTransactionsByUserId(userId, pagination,filter) {
   try {
     if (!userId) {
       throw new Error("No userId provided, returning empty array.");
-    }
-    
-    const validatedPagination = toPaginationFilter(pagination);
-          console.log("pagination:", validatedPagination);
+    }    
 
+    const validatedPagination = toPaginationFilter(pagination);
+    
       const transactions = await transaction.fetchUserTransactions(
         userId,
-        null,
+        filter,
         validatedPagination.page,
         validatedPagination.limit
       );
       if (!transactions || transactions.length <= 0) {
-        throw new Error("No transactions found");
+        throw new Error("No transactions found", userId);
       }
-      const fullTransactions = await enrichTransactionsWithOwners(
-        transactions.items
-      );
+      const fullTransactions = await enrichTransactionsWithOwners(transactions.items);
       transactions.items = fullTransactions;
       return transactions;
     

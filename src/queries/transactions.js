@@ -33,6 +33,8 @@ export const addTransaction = async (transaction) => {
 export const fetchUserTransactions = async (userId,filter,page,limit) => {
 
   try {
+      console.log("filter",filter);
+
     if (!filter) {
     filter = {};
   }

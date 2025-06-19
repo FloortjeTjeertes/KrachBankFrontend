@@ -7,9 +7,9 @@
       <li v-if="!userStore.getUser?.admin">
         <RouterLink   :key="'home'" to="/">Home</RouterLink>
       </li>
-      <li v-else>
+      <!-- <li v-else>
         <RouterLink  to="/admin" :key="'admin-home'">Home admin</RouterLink>
-      </li>
+      </li> -->
    
       <!-- TODO:make this dynamic whit a switch at the login page instead of a button or dont use an extra signeup -->
       <li>

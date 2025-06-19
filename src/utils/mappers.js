@@ -20,8 +20,8 @@ export function mapToTransaction(transaction) {
 
   return {
     amount: transaction.amount,
-    to: transaction.sender,
-    from: transaction.receiver,
+    to: transaction.receiver,
+    from: transaction.sender,
     description: transaction.description,
     initiator: transaction.initiator,
     createdAt: transaction.createdAt,
