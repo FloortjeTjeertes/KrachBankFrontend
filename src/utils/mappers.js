@@ -20,8 +20,8 @@ export function mapToTransaction(transaction) {
 
   return {
     amount: transaction.amount,
-    to: transaction.sender,
-    from: transaction.receiver,
+    to: transaction.receiver,
+    from: transaction.sender,
     description: transaction.description,
     initiator: transaction.initiator,
     createdAt: transaction.createdAt,
@@ -38,13 +38,12 @@ export function mapToAccount(apiObject) {
     console.warn("Invalid API object type, returning null");
     return null;
   }
-  if( !apiObject.owner ||
-    !apiObject.balance ||
-    !apiObject.iban ||
-    !apiObject.absoluteLimit ||
-    !apiObject.type
+  if( apiObject.owner==null ||
+    apiObject.balance==null ||
+    apiObject.iban==null ||
+    apiObject.absoluteLimit==null ||
+    apiObject.type===null 
   ) {
-    console.warn("Incomplete API object, returning null");
     throw Error("Incomplete API object, returning null");
   }
 

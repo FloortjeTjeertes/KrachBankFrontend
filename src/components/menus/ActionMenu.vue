@@ -8,7 +8,7 @@ const filterData = reactive(createAccountFilter());
 <template>
     <section class="action-menu ">
         <form>
-            <legend>Actions</legend>
+            <legend>filters</legend>
             <section class="grid">
                 <input type="text" placeholder="iban" v-model="filterData.iban" class="form-control mb-2">
                 <fieldset role="group" class="flex">

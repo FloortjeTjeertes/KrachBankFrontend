@@ -4,35 +4,28 @@
     <section class="row">
       <section class="col-md-5">
         <BankAccount :bankAccount="bankAccount"></BankAccount>
-       
       </section>
       <section class="col-md TransactionsTable">
-        <TransactionsTable
-          
-          :transactions="transactionList"
-        />
-         <button
-          class="btn btn-primary"
-          @click="makeNewTransaction()"
-        >
+        <TransactionsTable :transactions="transactionList" />
+        <button class="btn btn-primary" @click="makeNewTransaction()">
           Create Transaction
         </button>
       </section>
-
     </section>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
-import BankAccount from "../common/BankAccount.vue";
-import TransactionsTable from "../common/TransactionsTable.vue";
-import { mapToTransaction } from "../../utils/mappers";
-import { useRoute,useRouter } from "vue-router";
-import { mapToAccount } from "../../utils/mappers.js";
-
-import AccountService from "../../service/AccountService";
-import TransactionService from "../../service/TransactionService";
+import BankAccount from "@/components/containers/BankAccountContainer.vue";
+import TransactionsTable from "@/components/common/TransactionsTable.vue";
+import { mapToTransaction } from "@/utils/mappers";
+import { useRoute, useRouter } from "vue-router";
+import { mapToAccount } from "@/utils/mappers.js";
+import { createPaginationFilter } from "@/filters/paginationFilter";
+import {createAccountFilter} from "@/filters/accountFilter";
+import AccountService from "@/service/AccountService";
+import TransactionService from "@/service/TransactionService";
 const router = useRouter();
 const route = useRoute();
 const accountId = route.params.iban;
@@ -53,7 +46,6 @@ const bankAccount = ref({
     img: "https://example.com/checking-icon.png", // Placeholder image URL
   },
 });
-// const userStore = useUserStore();
 
 let transactionList = ref([]);
 
@@ -63,22 +55,14 @@ onMounted(async () => {
       "AccountPage mounted, fetching account and transactions for accountId:",
       accountId
     );
-   
-  
 
-      bankAccount.value = await getAccountByIban(accountId);
-      console.log("Fetched bank account:", bankAccount.value);
-      // Fetch transactions for the account
-      transactionList.value =  await getTransactionsForAccount(accountId);
-
-
-
-      
-      
+    bankAccount.value = await getAccountByIban(accountId);
+    console.log("Fetched bank account:", bankAccount.value);
+    // Fetch transactions for the account
+    transactionList.value = await getTransactionsForAccount(accountId);
   } catch (error) {
     console.error("Error during component mount:", error);
   }
-  
 });
 
 async function getAccountByIban(iban) {
@@ -91,25 +75,37 @@ async function getAccountByIban(iban) {
 
     return mapToAccount(account);
   } catch (error) {
-    throw new Error("Error fetching account: " + error.message);
+    throw new Error(error.message );
   }
 }
 
-
-async function  getTransactionsForAccount(accountId) {
+async function getTransactionsForAccount(accountId, filter) {
   try {
-    const transactions = await TransactionService.getTransactionsForAccount(accountId);
-    if (!transactions || transactions.length <= 0) {
-      console.warn("No transactions found for account.");
+    if (!accountId) {
+      console.warn("Invalid account ID:", accountId);
       return [];
     }
-    return transactions.map((transaction) => mapToTransaction(transaction));
+    if (!filter) {
+      // filter = createPaginationFilter(1, 10); // Default to page 1 with 10 items per page
+      filter = null;
+    }
+    const transactions = await TransactionService.getTransactionsForAccount(
+      accountId,
+      // filter
+    );
+        console.log("Fetched transactions:", transactions);
+    if (!transactions || transactions.items.length <= 0) {
+      throw new Error("No transactions found for account: " + accountId);
+    }
+    const items = transactions.items; // Handle both cases where items is an array or the response is directly an array
+    if (!items) {
+      throw new Error("No items found in the response.");
+    }
+    return items.map((transaction) => mapToTransaction(transaction));
   } catch (error) {
-    throw new Error("Error fetching transactions: " + error.message);
+    throw new Error(error.message);
   }
 }
-
-
 
 function makeNewTransaction() {
   router.push({
@@ -126,4 +122,3 @@ function makeNewTransaction() {
   font-size: medium;
 }
 </style>
- 

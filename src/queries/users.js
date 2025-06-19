@@ -24,7 +24,6 @@ export const createUser = async (userData) => {
   };
 
 export const login = async (credentials) => {
-  console.log("Logging in with credentials:", credentials);
   const response = await api.post('/auth/login', credentials);
   if (
     typeof response.data !== "object" ||

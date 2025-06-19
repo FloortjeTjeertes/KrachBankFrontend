@@ -1,9 +1,26 @@
 <template>
   <div>
-    transaction overview
-    <TransactionsTable
-      v-if="transactionList && transactionList.length > 0"
-      :transactions="transactionList"
+    <section class="transactionOverview">
+      <h2>Transactions</h2>
+      <TransactionFilterMenu
+        @filter="handleFilter"
+        class="transactionFilterMenu"
+      />
+      <TransactionsTable
+        v-if="transactionList && transactionList.length > 0"
+        :transactions="transactionList"
+        class="transactionTable"
+      />
+      <p v-else class="noTransactionsMessage">No transactions found.</p>
+    </section>
+    <PaginationGroup
+      :currentPage="currentPage.value"
+      :totalPages="totalPages.value"
+      @prev="prevPage()"
+      @next="nextPage()"
+      v-model:currentPageProp="currentPage"
+      v-model:totalPagesProp="totalPages"
+      class="paginationGroup"
     />
   </div>
 </template>
@@ -11,83 +28,158 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import TransactionsTable from "./TransactionsTable.vue";
-import transaction from "../../queries/transactions";
-import users from "../../queries/users";
-import { mapToTransaction } from "../../utils/mappers";
+import PaginationGroup from "./PaginationGroup.vue";
+import transactionService from "@/service/TransactionService";
+import TransactionFilterMenu from "@/components/menus/TransactionFilterMenu.vue";
+import { mapToTransaction } from "@/utils/mappers";
 import { useToast } from "vue-toastification";
-import { useUserStore } from "../../stores/userStore";
+import { useUserStore } from "@/stores/userStore";
+import { createPaginationFilter } from "@/filters/paginationFilter";
+import { toTransactionFilter, createTransactionFilter } from "@/filters/transactionFilter";
+
 const toast = useToast();
 const userStore = useUserStore();
 
-var accountId = userStore.getUser?.id; // Default account ID, replace with actual logic to get current account ID
+var accountId = userStore.getUser?.id;
 
 let transactionList = ref([]);
-// const userStore = useUserStore();
+let currentPage = ref(1);
+let totalPages = ref(1);
+let AmountPerPage = ref(5);
 
-onMounted(() => {
+onMounted(async () => {
   try {
-    var user = getLoggedInUser(); // Ensure user is logged in before fetching transactions
-    console.log("Logged in user:", user);
-    // Fetch transactions for the current user or a default user
-    getTransactionsForUser(accountId)
-      .then((transactions) => {
-        if (!transaction || transaction.length <= 0) {
-          console.warn("No transactions found for user.");
-          return;
-        }
-        transactionList.value = transactions.map((transaction) =>
-          mapToTransaction(transaction)
-        );
-
-        console.log("Transactions fetched successfully for user.");
-      })
-      .catch((error) => {
-        toast.error("Error fetching transactions: " + error.message);
-        console.error("Error fetching transactions:", error);
-      });
+    const paginationFilter = createPaginationFilter(
+      currentPage.value,
+      AmountPerPage.value
+    );
+    transactionList.value = await getTransactionsForUser(
+      accountId,
+      paginationFilter
+    );
   } catch (error) {
     console.error("Error during component mount:", error);
   }
 });
 
-async function getTransactionsForUser(userId) {
+async function nextPage() {
+  console.log("nextPage called");
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+    transactionList.value = await getTransactionsForUser(
+      accountId,
+      createPaginationFilter(currentPage.value, AmountPerPage.value)
+    );
+  }
+}
+
+async function prevPage() {
+  console.log("prevPage called");
+  if (currentPage.value > 1) {
+    currentPage.value--;
+    transactionList.value = await getTransactionsForUser(
+      accountId,
+      createPaginationFilter(currentPage.value, AmountPerPage.value)
+    );
+  }
+}
+
+async function getTransactionsForUser(userId, paginationFilter) {
   try {
-    if (!Number.isInteger(userId)) {
-      console.warn("userId is not an integer:", userId);
-      toast.error("Invalid user ID.");
+    if (!userId) {
+      console.warn("userId is undefined or null");
+      toast.error("User ID is required.");
       return [];
     }
+    const transactions = await transactionService.getTransactionsByUserId(
+      userId,
+      paginationFilter
+    );
 
-    const transactions = await transaction.fetchUserTransactions(userId);
-    if (!transactions || transactions.length < 0) {
-      throw new Error("No transactions found for user: " + userId);
+    if (!transactions || transactions.items.length <= 0) {
+      return [];
     }
-
-    return transactions;
-  } catch (e) {
-    console.error("Error fetching transactions for user:", e);
-    toast.error("Error fetching transactions for user: " + e.message);
-  }
-}
-
-function getLoggedInUser() {
-  const userStore = useUserStore();
-  console.log("User store:", userStore.get);
-
-  try {
-    if (!userStore.getUser || !userStore.getUser.id) {
-      console.warn("No user found in store, please login first.");
-      //router.push("/login"); // Redirect to login page if no user is found
+    const items = transactions.items; // Handle both cases where items is an array or the response is directly an array
+    if (!items) {
+      throw new Error("No items found in the response.");
     }
+    totalPages.value = transactions.totalPages;
+    currentPage.value = transactions.currentPage + 1;
 
-    users.fetchUserById(userStore.getUser.id); // Ensure user data is fetched
+    return items.map((transaction) => mapToTransaction(transaction));
   } catch (error) {
-    console.error("Error fetching user data:", error);
-    toast.error("Error fetching user data: " + error.message);
+    console.error("Error fetching transactions for user:", error);
+    toast.error(error.message);
   }
-
-  return userStore.getUser;
 }
+
+async function handleFilter(filterData) {
+  try {
+ 
+    filterData.date.dateFrom = filterData.date.after;
+    const filter = makeFilterData(filterData);
+    const Transactions = await transactionService.getTransactionsByUserId(
+      accountId,
+      createPaginationFilter(currentPage.value, AmountPerPage.value),
+      filter
+    );
+    if (!Transactions || Transactions.items.length <= 0) {
+      console.warn("No transactions found or error fetching transactions.");
+    }
+
+    transactionList.value = Transactions.items.map((transaction) =>
+      mapToTransaction(transaction)
+    );
+    totalPages.value = Transactions.totalPages;
+    currentPage.value = Transactions.currentPage + 1;
+
+    toast.success("Transactions fetched successfully with filter");
+  } catch (error) {
+    console.error("Error fetching transactions for user:", error);
+    toast.error(error.message);
+  }
+}
+
+function makeFilterData(filterData) {
+  console.log("makeFilterData called with:", filterData);
+  var filter = createTransactionFilter();
+  filter.sender = filterData.iban.sender;
+  filter.receiver = filterData.iban.receiver;
+  filter.amount.min = filterData.amount.min;
+  filter.amount.max = filterData.amount.max;
+  filter.date.before = filterData.date.after;
+  filter.date.after = filterData.date.before;
+
+
+
+  return toTransactionFilter(filter);
+
+  
+  
+}
+
+
 </script>
 
-<style lang="css" scoped></style>
+<style lang="css" scoped>
+.transactionOverview {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 75vh;
+  max-height: 75vh;
+}
+
+.paginationGroup {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.transactionFilterMenu {
+   box-sizing: border-box;
+   margin-bottom: 0;
+}
+</style>

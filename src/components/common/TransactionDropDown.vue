@@ -14,7 +14,7 @@
         @keyup="getAccounts"
       />
       <li
-        v-for="account in FilterdAccounts"
+        v-for="account in FilteredAccounts"
         :key="account.iban"
         class="dropdown-item"
         @click="setSelectedAccount(account)"
@@ -26,9 +26,11 @@
 </template>
 
 <script setup>
-import SmallAccount from "@/components/common/SmallAccount.vue";
+import SmallAccount from "@/components/containers/SmallAccountContainer.vue";
 import AccountService from "@/service/AccountService.js";
 import { ref, onMounted, watch, defineEmits, defineProps } from "vue";
+import { mapToAccount } from "../../utils/mappers.js";
+
 const SelectedIban = ref("");
 const emit = defineEmits(["update:modelValue"]); // Emit event to update modelValue
 const props = defineProps({
@@ -44,22 +46,20 @@ const props = defineProps({
     default: 0,
   },
 });
-
-const SelectedAccount = ref({
+const placeholderAccount = {
   owner: {
     id: 0,
-    name: "none",
-    firstName: "none",
-    lastName: "none",
+    name: "placeholderUserName",
+    firstName: "placeholder",
+    lastName: "placeholder",
   },
   balance: 0,
   iban: "0000000000000000000000",
-  type: {
-    name: "NONE",
-    img: "https://cdn4.iconfinder.com/data/icons/48-bubbles/48/07.Wallet-256.png",
-  },
-});
-const FilterdAccounts = ref([
+  type: "CHECKING",
+};
+
+const SelectedAccount = ref(placeholderAccount);
+const FilteredAccounts = ref([
   {
     owner: {
       id: 0,
@@ -68,42 +68,54 @@ const FilterdAccounts = ref([
       lastName: "placeholder",
     },
     balance: 0,
-    iban: "DE00000000000000000000",
+    iban: "0000000000000000000000",
     type: {
       name: "CHECKING",
-      img: "https://cdn4.iconfinder.com/data/icons/48-bubbles/48/07.Wallet-256.png",
+      img: "",
     },
   },
 ]);
 
 onMounted(async () => {
-  SelectedIban.value = props.iban || ""; // Default IBAN if not provided
-  FilterdAccounts.value = await getAccounts();
-  if ((!props.modelValue || !props.modelValue.iban) &&FilterdAccounts.value.length > 0) {
-    setSelectedAccount(FilterdAccounts.value[0]);
+  SelectedIban.value = props.iban;
+  FilteredAccounts.value = await getAccounts();
+  if (!FilteredAccounts.value) {
+    console.warn("No accounts found for the given user or IBAN.");
+    return;
   }
+  // setSelectedAccount(FilteredAccounts.value[0]);
 });
 
 async function getAccounts() {
-  if (props.userId && props.userId > 0) {
-    console.log("Fetching accounts for userId:", props.userId);
-    return getFilteredAccountsForUser(props.userId, props.iban);
+  if (
+    props.userId &&
+    props.userId > 0 &&
+    props.iban &&
+    props.iban.trim() !== ""
+  ) {
+    const accounts = await getFilteredAccountsForUser(props.userId, props.iban);
+
+    return accounts || [];
   } else {
-    return getAllAccounts();
+
+    const accounts = await getAllAccounts();
+
+    return accounts || [];
   }
 }
 async function getAllAccounts() {
   try {
-    if (!SelectedIban.value || SelectedIban.value.trim() === "") {
-      throw new Error("IBAN is required to fetch accounts.");
+    const accounts = await AccountService.getAllAccounts(); //TODO: make a method to get all accounts for a user
+    if (!accounts || accounts.length === 0) {
+      console.warn("No accounts found.");
+      return [];
     }
-    const filter = {
-      iban: SelectedIban.value,
-      // accountType: "CHECKING"  //TODO: make a toggle that allows admins to filter by account type
-    };
-    const accounts = await AccountService.getAllAccounts(filter); //TODO: make a method to get all accounts for a user
-    console.log("Fetched accounts:", accounts);
-    return accounts;
+    const items = accounts.items;
+    if (!items) {
+      throw new Error("No items found in the response.");
+    }
+    console.log("all Accounts fetched successfully:", items);
+    return items.map((account) => mapToAccount(account));
   } catch (error) {
     console.error("Error fetching accounts:", error);
   }
@@ -115,11 +127,14 @@ async function getFilteredAccountsForUser(userId, Iban) {
       throw new Error("Invalid user ID provided.");
     }
     const accounts = await AccountService.getAccounts(userId, Iban);
-    console.log("Fetched accounts for userId:", userId, accounts);
     if (!accounts || accounts.length === 0) {
-      return []; // Return an empty array if no accounts found
+      return [];
     }
-    return accounts.filter((account) => account.owner.id === userId);
+    const items = accounts.items;
+    if (!items) {
+      throw new Error("No items found in the response.");
+    }
+    return items.map((account) => mapToAccount(account));
   } catch (error) {
     console.error("Error fetching accounts:", error);
   }
@@ -131,7 +146,8 @@ watch(
   }
 );
 function setSelectedAccount(account) {
-  if (account && account.iban) {
+  console.log("Selected account:", account);
+  if (account && account.IBAN) {
     SelectedAccount.value = account;
     emit("update:modelValue", account); // Emit the selected account
   } else {
@@ -158,7 +174,7 @@ input.dropdown-search {
 }
 
 .dropdown-account {
-  width: auto !important;
+  width: 100% !important;
   display: flex;
   align-items: center;
 }
