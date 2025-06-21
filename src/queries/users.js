@@ -47,7 +47,7 @@ export const fetchUser = async (filter, pagination) => {
     filter.page = pagination.page;
     filter.limit = pagination.limit;
   }
-
+  console.log("Fetching user with filter:", filter);
   const response = await api.get(`/users`, {
     params: filter // Pass the filter as query parameters
   });

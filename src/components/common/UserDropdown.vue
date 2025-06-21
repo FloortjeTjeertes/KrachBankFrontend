@@ -2,6 +2,7 @@
   <details class="dropdown" @click="getAccounts">
     <summary class="dropdown-header">
       <!-- <SmallUser class="dropdown-account" :account="SelectedAccount" /> -->
+
       {{ name.firstName }} {{ name.lastName }}
     </summary>
     <ul class="dropdown-body">
@@ -15,14 +16,17 @@
         @keyup="getUser(userName)"
       />
       <li
-        v-for="transaction in filterdTransactions"
-        :key="transaction.Id"
+        v-for="user in filteredUsers"
+        :key="user.Id"
         class="dropdown-item"
-        @click="setSelectedAccount(account)"
+        @click="setSelectedAccount(user)"
       >
-        <SmallAccount class="selectableAccount" :account="account" />
+    {{ user.id }} {{ user.firstName }} {{ user.lastName }}
+      
+        <!-- <SmallUser class="dropdown-account" :account="SelectedAccount" /> -->
       </li>
     </ul>
+     
   </details>
 </template>
 
@@ -37,7 +41,7 @@ const props = defineProps({
     required: false,
   },
 });
-const filteredTransactions = ref([]);
+const filteredUsers = ref([]);
 const userName = ref("John Doe");
 const name = {
   firstName: "John",
@@ -53,31 +57,29 @@ watch(userName, (newValue) => {
     filteredTransactions.value = [];
   }
 });
-
-
-
-async function getUser(Name) {
-  UserService.getUserByName(Name)
-    .then((response) => {
-      if (response.data) {
-        selectedUser.value = response.data;
-        name.firstName = response.data.firstName || "firstName";
-        name.lastName = response.data.lastName || "lastName";
-      } else {
-        console.warn("No user data found for ID:", props.userId);
-      }
-    })
-    .catch((error) => {
-      console.error("Error fetching user data:", error);
-    });
-}
-
 const selectedUser = ref({
   id: 0,
   name: "placeholderUserName",
   firstName: "placeholder",
   lastName: "placeholder",
 });
+async function getUser(Name) {
+  try {
+    const response = await UserService.getUserByName(Name);
+    if (response) {
+      filteredUsers.value = response;
+     
+    console.log("User data fetched:", filteredUsers.value);
+
+    } else {
+      console.warn("No user data found:", props.userId);
+    }
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+  }
+}
+
+
 
 function setSelectedAccount(account) {
   console.log("Selected account:", account);
