@@ -22,6 +22,24 @@ async function getUserById(accountId) {
 
 }
 
+async function getUserByName(fullName) {
+    if (!name) {
+        console.warn("No name provided, returning null");
+        return null;
+    }
+    //TODO : use the standard way to create and validate filter just like whit transactions and accounts
+    var filter = { firstName: fullName.firstName, lastName: fullName.lastName };
+    var pagination = { page: 1, limit: 1 };
+    return users.fetchUser(filter,pagination).then(data => {
+        return data;
+    }).catch(error => {
+        console.error("Error fetching user by name:", error);
+        return null;
+    });
+}
+
 export default {
-    getUserById
+    getUserById,
+    getUserByName
+
 };

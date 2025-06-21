@@ -121,6 +121,7 @@ async function getAllAccounts() {
   }
 }
 
+//tODO: maybe combine behavior of getFilteredAccountsForUser and getAllAccounts
 async function getFilteredAccountsForUser(userId, Iban) {
   try {
     if (!userId || userId <= 0) {

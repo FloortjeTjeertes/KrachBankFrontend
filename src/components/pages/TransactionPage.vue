@@ -8,7 +8,8 @@
       <input type="number" v-model="Transaction.amount" placeholder="Amount" class="form-control"
         min="0" step="0.01" @input="DisableMinusValue" />
       <h6>where do you want to transfer to:</h6>
-      <TransactionDropDown class="dropDown" :iban="SendingIBan" v-model="selectedAccountReceive"/>
+      <AccountDropDown class="dropDown" :iban="SendingIBan" v-model="selectedAccountReceive"/>
+      <UserDropdown class="dropDown"  v-model="selectedAccountReceive"/>
       <h6>write a description:</h6>
       <input type="text" v-model="Transaction.description" placeholder="Description" class="form-control" />
       <button type="button" class="btn btn-primary"  @click="SendTransaction">submit</button>
@@ -24,8 +25,9 @@ import { onMounted, ref, watch } from "vue";
 import { useUserStore } from '@/stores/userStore';
 import { useToast } from "vue-toastification";
 import { useRoute } from "vue-router";
-import TransactionDropDown from "@/components/common/TransactionDropDown.vue";
 import transactionService from "@/service/TransactionService.js";
+import UserDropdown from "../common/UserDropdown.vue";
+import AccountDropDown from "../common/AccountDropDown.vue";
 
 const userStore = useUserStore();
 const route = useRoute();
