@@ -1,8 +1,9 @@
 <template>
-  <details class="dropdown" @click="getAccounts">
+  <details class="dropdown" @click="handleClick">
     <summary class="dropdown-header">
       <SmallAccount class="dropdown-account" :account="SelectedAccount" />
     </summary>
+    {{ userId }}
     <ul class="dropdown-body">
       <input
         type="text"
@@ -37,7 +38,7 @@ const props = defineProps({
   modelValue: Object, // The selected account object
   iban: {
     type: String,
-    required: true,
+    required: false,
     default: "",
   },
   userId: {
@@ -87,20 +88,20 @@ onMounted(async () => {
 });
 
 async function getAccounts() {
-  if (
-    props.userId &&
-    props.userId > 0 &&
-    props.iban &&
-    props.iban.trim() !== ""
-  ) {
+  try {
+    if (
+      !props.userId &&
+      props.userId < 0 &&
+      !props.iban &&
+      props.iban.trim() === ""
+    ) {
+      throw new Error("Invalid user ID or IBAN provided.");
+    }
     const accounts = await getFilteredAccountsForUser(props.userId, props.iban);
-
     return accounts || [];
-  } else {
-
-    const accounts = await getAllAccounts();
-
-    return accounts || [];
+  } catch (error) {
+    console.error("Error in getAccounts:", error);
+    return [];
   }
 }
 async function getAllAccounts() {
@@ -120,7 +121,11 @@ async function getAllAccounts() {
     console.error("Error fetching accounts:", error);
   }
 }
+async function handleClick() {
+  FilteredAccounts.value = await getAccounts();
+}
 
+//tODO: maybe combine behavior of getFilteredAccountsForUser and getAllAccounts
 async function getFilteredAccountsForUser(userId, Iban) {
   try {
     if (!userId || userId <= 0) {
@@ -145,8 +150,8 @@ watch(
     SelectedAccount.value = newVal;
   }
 );
+
 function setSelectedAccount(account) {
-  console.log("Selected account:", account);
   if (account && account.IBAN) {
     SelectedAccount.value = account;
     emit("update:modelValue", account); // Emit the selected account
