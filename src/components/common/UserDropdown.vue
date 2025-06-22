@@ -23,7 +23,7 @@
       >
         <!--TODO: maybe make this into an cutom component -->
         <div clas="user">
-          {{ user.id }} {{ user.firstName }} {{ user.lastName }}
+          {{ user.firstName }} {{ user.lastName }}
         </div>
       </li>
     </ul>
@@ -79,7 +79,6 @@ async function getUser(Name) {
     if (response) {
       filteredUsers.value = response;
 
-      console.log("User data fetched:", filteredUsers.value);
     } else {
       console.warn("No user data found:", props.userId);
     }
@@ -89,7 +88,6 @@ async function getUser(Name) {
 }
 
 function setSelectedUse(User) {
-  console.log("Selected user:", User);
   if (!User && !User.id) {
     throw new Error("Invalid user selected");
   }
