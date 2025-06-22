@@ -97,7 +97,6 @@ async function getAccounts() {
     ) {
       throw new Error("Invalid user ID or IBAN provided.");
     }
-    console.log("Fetching accounts for userId:", props.userId, "and IBAN:", props.iban);
     const accounts = await getFilteredAccountsForUser(props.userId, props.iban);
     return accounts || [];
   } catch (error) {
