@@ -30,14 +30,29 @@ async function getUserByName(fullName) {
       console.warn("No name provided, returning null");
       return null;
     }
-    var filter = { firstName: fullName.firstName, lastName: fullName.lastName };
+    console.log(fullName);
+    var nameObject = nameToNameObject(fullName);
     var pagination = { page: 1, limit: 1 };
-    var fetchedUsers = users.fetchUser(filter, pagination);
+    var fetchedUsers = users.fetchUser(nameObject, pagination);
     return fetchedUsers;
   } catch (error) {
     console.error("Error fetching user by name:", error);
     return null;
   }
+}
+
+/**
+ * Converts a full name string into an object with firstName and lastName properties.
+ *
+ * @param {string} nameString - The full name as a single string (e.g., "John Doe").
+ * @returns {{ firstName: string, lastName: string }} An object containing the first and last name.
+ */
+function nameToNameObject(nameString) {
+  var nameObject = { firstName : "", lastName : "" };
+  nameObject.firstName= nameString.split(" ")[0]|| "";
+    nameObject.lastName = nameString.split(" ")[1] || "";
+
+  return nameObject;
 }
 
 export default {

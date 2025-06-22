@@ -22,7 +22,6 @@ export const fetchUsers = async (params = {}) => {
 export const createUser = async (userData) => {
   // Ensure dailyLimit is set
   if (!userData.dailyLimit) userData.dailyLimit = userData.transferLimit;
-  console.log("Creating user with data:", userData);
   const response = await api.post("/auth/register", userData);
   return response.data;
 };
@@ -47,7 +46,6 @@ export const fetchUser = async (filter, pagination) => {
     filter.page = pagination.page;
     filter.limit = pagination.limit;
   }
-  console.log("Fetching user with filter:", filter);
   const response = await api.get(`/users`, {
     params: filter // Pass the filter as query parameters
   });

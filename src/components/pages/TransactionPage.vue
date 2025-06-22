@@ -3,13 +3,14 @@
     <header>transactionForm</header>
     <form>
       <h6>select account to send from:</h6>
-      <TransactionDropDown class="dropDown" :iban="SendingIBan" :userId="userId" v-model="selectedAccountSend"/>
+      <AccountDropDown class="dropDown" :iban="SendingIBan" :userId="userId" v-model="selectedAccountSend"/>
       <h6>set transfer amount:</h6>
       <input type="number" v-model="Transaction.amount" placeholder="Amount" class="form-control"
         min="0" step="0.01" @input="DisableMinusValue" />
       <h6>where do you want to transfer to:</h6>
-      <AccountDropDown class="dropDown" :iban="SendingIBan" v-model="selectedAccountReceive"/>
-      <UserDropdown class="dropDown"  v-model="selectedAccountReceive"/>
+      {{ selectedUser?.id }} {{ selectedUser?.firstName }} {{ selectedUser?.lastName }}
+      <AccountDropDown class="dropDown" :iban="SendingIBan" :userId="selectedUser?.id" v-model="selectedAccountReceive"/>
+      <UserDropdown class="dropDown" v-model="selectedUser"/>
       <h6>write a description:</h6>
       <input type="text" v-model="Transaction.description" placeholder="Description" class="form-control" />
       <button type="button" class="btn btn-primary"  @click="SendTransaction">submit</button>
@@ -34,6 +35,7 @@ const route = useRoute();
 const userId = ref(userStore.getUser?.id);
 const selectedAccountSend = ref(null);
 const selectedAccountReceive = ref(null);
+const selectedUser = ref(null);
 const sendingIBan = ref();
 
 const props = defineProps({
@@ -67,6 +69,8 @@ watch(selectedAccountReceive, (newValue) => {
     Transaction.value.receiverIBAN = "";
   }
 });
+
+
 
 
 const Transaction = ref({
