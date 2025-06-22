@@ -8,7 +8,6 @@
       <input type="number" v-model="Transaction.amount" placeholder="Amount" class="form-control"
         min="0" step="0.01" @input="DisableMinusValue" />
       <h6>where do you want to transfer to:</h6>
-      {{ selectedUser?.id }} {{ selectedUser?.firstName }} {{ selectedUser?.lastName }}
       <AccountDropDown class="dropDown" :iban="SendingIBan" :userId="selectedUser?.id" v-model="selectedAccountReceive"/>
       <UserDropdown class="dropDown" v-model="selectedUser"/>
       <h6>write a description:</h6>

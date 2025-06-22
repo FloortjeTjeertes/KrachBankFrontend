@@ -1,4 +1,5 @@
 <template>
+  {{  userId}}
   <details class="dropdown" @click="getAccounts">
     <summary class="dropdown-header">
       <SmallAccount class="dropdown-account" :account="SelectedAccount" />
@@ -146,6 +147,9 @@ watch(
     SelectedAccount.value = newVal;
   }
 );
+
+
+
 function setSelectedAccount(account) {
   console.log("Selected account:", account);
   if (account && account.IBAN) {
