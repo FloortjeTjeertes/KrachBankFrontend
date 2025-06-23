@@ -14,9 +14,13 @@
     "axios": "^1.9.0",
     "esbuild": "^0.25.4",
     "flexboxgrid": "^6.3.1",
+    "libphonenumber-js": "^1.12.9",
+    "maz-ui": "^3.50.1",
     "pinia": "^3.0.2",
     "vue": "^3.4.21",
+    "vue-phone-number-input": "^1.12.13",
     "vue-router": "^4.5.0",
+    "vue-tel-input": "^9.3.0",
     "vue-toastification": "^2.0.0-rc.5"
   },
   "devDependencies": {

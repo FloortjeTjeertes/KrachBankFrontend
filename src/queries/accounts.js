@@ -18,7 +18,13 @@ export const fetchAccounts = async (filter, page, limit) => {
 };
 // fetch a single account by ID
 export const fetchAccountByIban = async (Iban) => {
+  try{
   const response = await api.get(`/accounts/${Iban}`);
+      }
+      catch{
+        console.error(`Error fetching account with IBAN ${iban}:`, error);
+        throw error;
+      }
   return response.data;
 };
 
@@ -48,5 +54,5 @@ export default {
   fetchAccounts,
   fetchAccountByIban,
   createAccount,
-  fetchAccountsForUser,
+  fetchAccountsForUser
 };
