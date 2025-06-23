@@ -104,23 +104,23 @@ async function getAccounts() {
     return [];
   }
 }
-async function getAllAccounts() {
-  try {
-    const accounts = await AccountService.getAllAccounts(); //TODO: make a method to get all accounts for a user
-    if (!accounts || accounts.length === 0) {
-      console.warn("No accounts found.");
-      return [];
-    }
-    const items = accounts.items;
-    if (!items) {
-      throw new Error("No items found in the response.");
-    }
-    console.log("all Accounts fetched successfully:", items);
-    return items.map((account) => mapToAccount(account));
-  } catch (error) {
-    console.error("Error fetching accounts:", error);
-  }
-}
+// async function getAllAccounts() {
+//   try {
+//     const accounts = await AccountService.getAllAccounts(); //TODO: make a method to get all accounts for a user
+//     if (!accounts || accounts.length === 0) {
+//       console.warn("No accounts found.");
+//       return [];
+//     }
+//     const items = accounts.items;
+//     if (!items) {
+//       throw new Error("No items found in the response.");
+//     }
+//     console.log("all Accounts fetched successfully:", items);
+//     return items.map((account) => mapToAccount(account));
+//   } catch (error) {
+//     console.error("Error fetching accounts:", error);
+//   }
+// }
 async function handleClick() {
   FilteredAccounts.value = await getAccounts();
 }
