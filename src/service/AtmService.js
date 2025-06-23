@@ -1,3 +1,5 @@
+// src/main/resources/static/js/service/AtmService.js
+
 import accounts from '../queries/accounts'; // Assuming this fetches user accounts
 import { addTransaction } from '../queries/transactions'; // Assuming this sends transactions to API
 import { useUserStore } from '../stores/userStore'; // To get the user ID if needed by the service
@@ -14,14 +16,21 @@ export function useAtmService() {
     }
     try {
       // Assuming ATM account always has ID 3 or is identifiable
-      const atmAccountArray = await accounts.fetchAccountsForUser(3);
-      if (atmAccountArray && Array.isArray(atmAccountArray) && atmAccountArray.length > 0) {
+      // accounts.fetchAccountsForUser now returns a paginated object
+      const atmAccountResponse = await accounts.fetchAccountsForUser(3); //
+
+      // Extract the 'items' array from the paginated response
+      if (!atmAccountResponse || !Array.isArray(atmAccountResponse.items)) { //
+        throw new Error("Invalid response format for ATM account: Expected a paginated object with 'items' array."); //
+      }
+      const atmAccountArray = atmAccountResponse.items; //
+
+      if (atmAccountArray && Array.isArray(atmAccountArray) && atmAccountArray.length > 0) { //
         // Find the specific ATM account, if there are multiple accounts for user ID 3
-        // Or assume the first one is the ATM account
-        const atmCheckingAccount = atmAccountArray.find(account => account.type === "CHECKING"); // Assuming ATM also has a CHECKING type
-        if (atmCheckingAccount) {
-          ATM_IBAN.value = atmCheckingAccount.iban;
-          return ATM_IBAN.value;
+        const atmCheckingAccount = atmAccountArray.find(account => account.type === "CHECKING"); //
+        if (atmCheckingAccount) { //
+          ATM_IBAN.value = atmCheckingAccount.iban; //
+          return ATM_IBAN.value; //
         } else {
           throw new Error("ATM checking account not found.");
         }
@@ -45,20 +54,22 @@ export function useAtmService() {
 
     try {
       const userId = userStore.getUser.id;
-      // The currentFilter with 'id': userId might be redundant if fetchAccountsForUser already filters by userId
-      // based on its first argument. Review your accounts.fetchAccountsForUser implementation.
-      const accountsArray = await accounts.fetchATMForUser(userId);
+      // accounts.fetchAccountsForUser now returns a paginated object
+      const accountsResponse = await accounts.fetchAccountsForUser(userId); //
 
-      if (!accountsArray || !Array.isArray(accountsArray)) {
-        throw new Error("Invalid response format from API: Expected an array of accounts.");
+      // Extract the 'items' array from the paginated response
+      if (!accountsResponse || !Array.isArray(accountsResponse.items)) { //
+        throw new Error("Invalid response format from API: Expected a paginated object with 'items' array."); //
       }
 
-      const checkingAccount = accountsArray.find(account => account.type === "CHECKING");
+      const accountsArray = accountsResponse.items; //
 
-      if (checkingAccount) {
-        return {
-          balance: checkingAccount.balance,
-          iban: checkingAccount.iban
+      const checkingAccount = accountsArray.find(account => account.type === "CHECKING"); //
+
+      if (checkingAccount) { //
+        return { //
+          balance: checkingAccount.balance, //
+          iban: checkingAccount.iban //
         };
       } else {
         throw new Error("Checking account not found for this user.");
@@ -89,7 +100,7 @@ export function useAtmService() {
     const transactionPayload = {
       amount: amount,
       sender: userCheckingIban,
-      receiver: atmIbanValue, // Use the fetched ATM IBAN
+      receiver: atmIbanValue,
       description: "ATM Cash Withdrawal"
     };
 
@@ -120,7 +131,7 @@ export function useAtmService() {
 
     const transactionPayload = {
       amount: amount,
-      sender: atmIbanValue, // Use the fetched ATM IBAN
+      sender: atmIbanValue,
       receiver: userCheckingIban,
       description: "ATM Cash Deposit"
     };
