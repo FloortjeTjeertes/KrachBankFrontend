@@ -2,18 +2,27 @@
 import api from "./axios";
 
 // Fetch all transactions
-export const fetchTransactions = async (filter,page,limit) => {
+export const fetchTransactions = async (filter, page, limit) => {
   if (!filter) {
     filter = {};
   }
-  if (page && limit) {
-    filter.page = page; // Add pagination parameters
+
+  if (page != null && limit != null) {
+    filter.page = page;
     filter.limit = limit;
   }
-  const response = await api.get("/transactions",{
-    params: filter, // Pass the filter as query parameters
+
+  // Remove keys with empty string values
+  const cleanedFilter = Object.fromEntries(
+    Object.entries(filter).filter(
+      ([_, value]) => value !== "" && value !== null && value !== undefined
+    )
+  );
+
+  const response = await api.get("/transactions", {
+    params: cleanedFilter,
   });
- 
+
   return validateResponse(response);
 };
 
