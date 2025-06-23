@@ -47,7 +47,7 @@ export function useAtmService() {
       const userId = userStore.getUser.id;
       // The currentFilter with 'id': userId might be redundant if fetchAccountsForUser already filters by userId
       // based on its first argument. Review your accounts.fetchAccountsForUser implementation.
-      const accountsArray = await accounts.fetchAccountsForUser(userId);
+      const accountsArray = await accounts.fetchATMForUser(userId);
 
       if (!accountsArray || !Array.isArray(accountsArray)) {
         throw new Error("Invalid response format from API: Expected an array of accounts.");

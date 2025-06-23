@@ -18,7 +18,13 @@ export const fetchAccounts = async (filter, page, limit) => {
 };
 // fetch a single account by ID
 export const fetchAccountByIban = async (Iban) => {
+  try{
   const response = await api.get(`/accounts/${Iban}`);
+      }
+      catch{
+        console.error(`Error fetching account with IBAN ${iban}:`, error);
+        throw error;
+      }
   return response.data;
 };
 
@@ -43,10 +49,30 @@ export const fetchAccountsForUser = async (userId, filter, page, limit) => {
   });
   return response.data;
 };
+async function fetchATMForUser(userId) {
+    try {
+        const response = await axios.get(`/api/accounts`, {
+            params: {
+                userId: userId
+            }
+        });
+        // CRITICAL FIX: Extract the 'items' array from the paginated response
+        if (response.data && Array.isArray(response.data.items)) {
+            return response.data.items; // Return ONLY the array of accounts
+        } else {
+            // Add a more specific error if 'items' is not found or not an array
+            throw new Error("Invalid response format: 'items' array not found in accounts response.");
+        }
+    } catch (error) {
+        console.error("Error fetching accounts:", error);
+        throw error;
+    }
+}
 
 export default {
   fetchAccounts,
   fetchAccountByIban,
   createAccount,
   fetchAccountsForUser,
+  fetchATMForUser,
 };
