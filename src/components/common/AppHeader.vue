@@ -4,17 +4,7 @@
       <li><strong>Krach Bank</strong></li>
     </ul>
     <ul v-if="userStore.isAuthenticated">
-      <li v-if="!userStore.getUser?.admin">
-        <RouterLink   :key="'home'" to="/">Home</RouterLink>
-      </li>
-      <!-- <li v-else>
-        <RouterLink  to="/admin" :key="'admin-home'">Home admin</RouterLink>
-      </li> -->
-   
-      <!-- TODO:make this dynamic whit a switch at the login page instead of a button or dont use an extra signeup -->
-      <li>
-        <RouterLink to="/atm">ATM</RouterLink>
-      </li>
+      
 
       <details class="dropdown">
         <summary>

@@ -189,24 +189,7 @@ async function handleUpdateAccount(updatedAccountData) {
             <input id="filterMaxBalance" type="number" v-model.number="filterMaxBalance" placeholder="e.g., 1000.00" step="0.01"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" />
           </div>
-          <!-- Filter for Active Status (Radio buttons for true/false/null) -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <div class="mt-1 flex space-x-4">
-              <label class="inline-flex items-center">
-                <input type="radio" v-model="filterActive" :value="null" class="form-radio text-blue-600">
-                <span class="ml-2 text-gray-700">All</span>
-              </label>
-              <label class="inline-flex items-center">
-                <input type="radio" v-model="filterActive" :value="true" class="form-radio text-green-600">
-                <span class="ml-2 text-gray-700">Active</span>
-              </label>
-              <label class="inline-flex items-center">
-                <input type="radio" v-model="filterActive" :value="false" class="form-radio text-red-600">
-                <span class="ml-2 text-gray-700">Inactive</span>
-              </label>
-            </div>
-          </div>
+          
         </div>
       </div>
 

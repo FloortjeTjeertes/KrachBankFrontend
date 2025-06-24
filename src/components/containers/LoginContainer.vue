@@ -21,14 +21,15 @@
         />
         <ATMLoginForm
           v-else
-          @atm-login-submitted="handleAtmLogin"
-          @switch-to-normal-login="switchToNormalLogin"
+          @switch-to-login="showLogin = true; showAtmLogin = false"
         />
+        <div class="atm-button-wrapper" v-if="!showAtmLogin">
+<router-link to="/atmlogin" class="pico-button">ATM Login</router-link>
+        </div>
       </article>
     </div>
   </div>
 </template>
-
 <script>
 import LoginForm from '@/components/forms/LoginForm.vue';
 import SignUpForm from '@/components/forms/SignUpForm.vue';
