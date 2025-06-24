@@ -2,12 +2,12 @@
   <div class="atm-page">
     <h1>ATM Page</h1>
     <p>Please login</p>
-    <label for="username">Username</label>
+    <label for="email">Email</label>
       <input
         type="text"
         id="email"
         v-model="email"
-        placeholder="Enter your username"
+        placeholder="Enter your email"
         required
       />
 

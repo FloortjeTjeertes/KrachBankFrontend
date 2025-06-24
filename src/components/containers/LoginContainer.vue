@@ -32,14 +32,12 @@
 <script>
 import LoginForm from '@/components/forms/LoginForm.vue';
 import SignUpForm from '@/components/forms/SignUpForm.vue';
-import ATMLoginForm from '@/components/forms/ATMLoginForm.vue';
 import blueTrumpBackground from '@/assets/bluetrump.png'; 
 export default {
   name: 'LoginContainer',
   components: {
     LoginForm,
     SignUpForm,
-    ATMLoginForm,
   },
   data() {
     return {
