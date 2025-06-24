@@ -4,18 +4,12 @@
     <section class="row">
       <section class="col-md-5">
         <BankAccount :bankAccount="bankAccount"></BankAccount>
-        <button
-          class="btn btn-primary"
-          @click="makeNewTransaction()"
-        >
+      </section>
+      <section class="col-md TransactionsTable">
+        <TransactionsTable :transactions="transactionList" />
+        <button class="btn btn-primary" @click="makeNewTransaction()">
           Create Transaction
         </button>
-      </section>
-      <section class="col-md">
-        <TransactionsTable
-          class="TransactionsTable"
-          :transactions="transactionList"
-        />
       </section>
     </section>
   </div>
@@ -23,17 +17,15 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import BankAccount from "../common/BankAccount.vue";
-import TransactionsTable from "../common/TransactionsTable.vue";
-import transaction from "../../queries/transactions";
-import { mapToTransaction } from "../../utils/mappers";
-import { useToast } from "vue-toastification";
-import { useRoute,useRouter } from "vue-router";
-import { mapToAccount } from "../../utils/mappers.js";
-
-import AccountService from "../../service/AccountService";
-import TransactionService from "../../service/TransactionService";
-const toast = useToast();
+import BankAccount from "@/components/containers/BankAccountContainer.vue";
+import TransactionsTable from "@/components/common/TransactionsTable.vue";
+import { mapToTransaction } from "@/utils/mappers";
+import { useRoute, useRouter } from "vue-router";
+import { mapToAccount } from "@/utils/mappers.js";
+import { createPaginationFilter } from "@/filters/paginationFilter";
+import {createAccountFilter} from "@/filters/accountFilter";
+import AccountService from "@/service/AccountService";
+import TransactionService from "@/service/TransactionService";
 const router = useRouter();
 const route = useRoute();
 const accountId = route.params.iban;
@@ -54,69 +46,68 @@ const bankAccount = ref({
     img: "https://example.com/checking-icon.png", // Placeholder image URL
   },
 });
-// const userStore = useUserStore();
 
 let transactionList = ref([]);
 
-onMounted(() => {
+onMounted(async () => {
   try {
     console.log(
       "AccountPage mounted, fetching account and transactions for accountId:",
       accountId
     );
-    // Fetch transactions for the current user or a default user
-    // if (!accountId) {
-    //     console.warn("No accountId provided, redirecting to home.");
-    //     router.push({ name: "home" });
-    //     return;
-    // }
-    AccountService.getAccountByIban(accountId)
-      .then((account) => {
-        if (!account) {
-          console.warn("No account found for the given accountId.");
-          return;
-        }
-        console.log("Account fetched successfully:", account);
-        let sanitizedAccount = mapToAccount(account);
-        if (!sanitizedAccount) {
-          console.warn("Sanitized account is null or undefined.");
-          return;
-        }
 
-        bankAccount.value = sanitizedAccount;
-      })
-      .catch((error) => {
-        toast.error("Error fetching account: " + error.message);
-        console.error("Error fetching account:", error);
-      });
-
-    TransactionService.getTransactionsForAccount(accountId)
-      .then((transactions) => {
-        if (!transactions || transactions.length <= 0) {
-          console.warn("No transactions found for account.");
-          return;
-        }
-        console.log("Transactions fetched for account:", transactions);
-        transactionList.value = transactions.map((transaction) =>
-          mapToTransaction(transaction)
-        );
-
-        console.log(
-          "Transactions fetched successfully for account.",
-          transactionList.value
-        );
-      })
-      .catch((error) => {
-        toast.error("Error fetching transactions: " + error.message);
-        console.error("Error fetching transactions:", error);
-      });
+    bankAccount.value = await getAccountByIban(accountId);
+    console.log("Fetched bank account:", bankAccount.value);
+    // Fetch transactions for the account
+    transactionList.value = await getTransactionsForAccount(accountId);
   } catch (error) {
     console.error("Error during component mount:", error);
   }
 });
 
+async function getAccountByIban(iban) {
+  try {
+    const account = await AccountService.getAccountByIban(iban);
+    if (!account) {
+      console.warn("No account found for the given IBAN.");
+      return null;
+    }
+
+    return mapToAccount(account);
+  } catch (error) {
+    throw new Error(error.message );
+  }
+}
+
+async function getTransactionsForAccount(accountId, filter) {
+  try {
+    if (!accountId) {
+      console.warn("Invalid account ID:", accountId);
+      return [];
+    }
+    if (!filter) {
+      // filter = createPaginationFilter(1, 10); // Default to page 1 with 10 items per page
+      filter = null;
+    }
+    const transactions = await TransactionService.getTransactionsForAccount(
+      accountId,
+      // filter
+    );
+        console.log("Fetched transactions:", transactions);
+    if (!transactions || transactions.items.length <= 0) {
+      throw new Error("No transactions found for account: " + accountId);
+    }
+    const items = transactions.items; // Handle both cases where items is an array or the response is directly an array
+    if (!items) {
+      throw new Error("No items found in the response.");
+    }
+    return items.map((transaction) => mapToTransaction(transaction));
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
 function makeNewTransaction() {
-  console.log("Navigating to transaction creation page with IBAN:", bankAccount.value.IBAN);
   router.push({
     name: "NewAccountTransaction",
     params: { iban: bankAccount.value.IBAN },
@@ -126,6 +117,8 @@ function makeNewTransaction() {
 
 <style lang="css" scoped>
 .TransactionsTable {
-  max-width: 20vw;
+  max-width: 20%;
+  height: 10vh !important;
+  font-size: medium;
 }
 </style>

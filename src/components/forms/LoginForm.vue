@@ -2,12 +2,12 @@
   <div>
     <h2>Login</h2>
     <form @submit.prevent="submitLogin">
-      <label for="username">Username</label>
+      <label for="email">Email</label>
       <input
         type="text"
-        id="username"
-        v-model="username"
-        placeholder="Enter your username"
+        id="email"
+        v-model="email"
+        placeholder="Enter your email"
         required
       />
 
@@ -19,11 +19,6 @@
         placeholder="Enter your password"
         required
       />
-
-      <label for="rememberMe">
-        <input type="checkbox" id="rememberMe" v-model="rememberMe" />
-        Remember Me
-      </label>
 
       <button type="submit">Login</button>
     </form>
@@ -46,23 +41,21 @@ export default {
   emits: ["login-submitted", "switch-to-signup", "switch-to-atm"],
   data() {
     return {
-      username: "",
+      email: "",
       password: "",
       rememberMe: false,
     };
   },
   methods: {
     async submitLogin() {
-      // Prevent empty username/password
-      console.log('submitLogin called!');
-  console.trace('Call Stack for submitLogin:'); // Add this line
-      if (!this.username || !this.password) {
-        toast.error("Username and password are required.");
+      // Prevent empty email/password
+      if (!this.email || !this.password) {
+        toast.error("Email and password are required.");
         return;
       }
       try {
         const response = await login({
-          username: this.username,
+          email: this.email,
           password: this.password,
         });
         if (!response || !response.token) {
@@ -108,7 +101,6 @@ export default {
       const userDetails = userResponse.userDetails;
 
       userStore.setUser(userDetails);
-      console.log("User details set in store:", userDetails);
 
       // Store token only if present
       if (token) {

@@ -5,8 +5,8 @@
     <label for="username">Username</label>
       <input
         type="text"
-        id="username"
-        v-model="username"
+        id="email"
+        v-model="email"
         placeholder="Enter your username"
         required
       />
@@ -34,16 +34,15 @@ export default {
   emits: ["login-submitted", "switch-to-signup"],
   data() {
     return {
-      username: "",
+      email: "",
       password: "",
-      rememberMe: false,
     };
   },
   methods: {
     async submitLogin() {
       try {
         const response = await login({
-          username: this.username,
+          email: this.email,
           password: this.password,
         });
         if (!response || !response.token) {
@@ -62,7 +61,6 @@ export default {
         }
         this.$emit("login-submitted", response);
       } catch (error) {
-        toast.error(msg);
         console.error("Login error:", error);
       }
     },

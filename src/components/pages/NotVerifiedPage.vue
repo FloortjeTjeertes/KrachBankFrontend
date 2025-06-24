@@ -5,24 +5,26 @@
       <p>Please wait for full access on the pages</p>
       <nav>
         <ul>
-          <li><a href="#" role="button" @click.prevent="logout">Logout</a></li>
+          <li><a role="button" @click.prevent="logout">Logout</a></li>
         </ul>
       </nav>
     </article>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'NotVerifiedPage',
-  methods: {
-    logout() {
-      localStorage.removeItem('token');
-      sessionStorage.removeItem('token');
-      this.$router.push('/login'); // Redirect to login after logout
-    }
-  }
-};
+<script setup>
+import { useRouter } from "vue-router";
+import { useUserStore } from "@/stores/userStore"; // Ensure correct import path
+const userStore = useUserStore();
+const router = useRouter();
+
+function logout() {
+  console.log("Logging out...");
+  localStorage.removeItem("token");
+  sessionStorage.removeItem("token");
+  userStore.resetUser();
+  router.push("/login"); // Redirect to login after logout
+}
 </script>
 
 <style scoped>

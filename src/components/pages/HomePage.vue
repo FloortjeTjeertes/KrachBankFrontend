@@ -3,7 +3,7 @@
         <section class="sideBar col-xs-12 col-md-2 ">
             <OverviewMenu @change="changeMenu" />
         </section>
-       <section class="maincontent col-xs-12 col-md-10">
+       <section class="container mainContent col-xs-12 col-md-10">
             <AccountOverview v-if="active === 'overview'"/>
             <TransactionOverview v-else-if="active === 'transactions'" />
             <TransactionForm v-else-if="active === 'transactionForm'" />
@@ -27,3 +27,6 @@ function changeMenu(menu) {
 }
 
 </script>
+<style scoped>
+
+</style>

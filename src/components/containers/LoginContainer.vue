@@ -11,7 +11,6 @@
       <article class="pico-form-card">
         <LoginForm
           v-if="showLogin && !showAtmLogin"
-          @login-submitted="handleLogin"
           @switch-to-signup="showLogin = false"
           @switch-to-atm="switchToAtmLogin"
         />
@@ -31,12 +30,10 @@
 </template>
 
 <script>
-import LoginForm from '../common/LoginForm.vue';
-import SignUpForm from '../common/SignUpForm.vue';
-import ATMLoginForm from '../common/ATMLoginForm.vue';
+import LoginForm from '@/components/forms/LoginForm.vue';
+import SignUpForm from '@/components/forms/SignUpForm.vue';
+import ATMLoginForm from '@/components/forms/ATMLoginForm.vue';
 import blueTrumpBackground from '@/assets/bluetrump.png'; 
-import { login as userLogin } from '@/queries/users';
-import { register as userRegister } from '@/queries/authentication';
 export default {
   name: 'LoginContainer',
   components: {
@@ -114,11 +111,11 @@ export default {
   background-color: var(--pico-background-color); /* Use Pico's background color variable */
 }
 
-/* Custom width for the form card to match previous design */
 .pico-form-card {
-  width: 350px;
-  max-width: 90%; /* Responsive fallback */
-  padding: 40px; /* Adjust padding if Pico's default article padding isn't enough */
-  /* Pico's article already has background, border-radius, and box-shadow */
+  /* Increase width here */
+  width: 800px; /* Example: make it wider */
+  max-width: 90%; /* Ensure it's still responsive on smaller screens */
+  padding: 40px;
 }
+
 </style>
