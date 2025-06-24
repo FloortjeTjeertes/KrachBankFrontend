@@ -1,5 +1,5 @@
-import accounts from "../queries/accounts";
-import UserService from "./UserService";
+import accounts from "../queries/accounts"; // This import is correct
+import UserService from "./UserService"; // Assuming this service exists and works
 //TODO: maybe this should be moved to a store or a separate transaction service
 
 /**
@@ -17,12 +17,11 @@ import UserService from "./UserService";
  *
  * @example
  * // Fetch all accounts for user 123, first page, 10 per page
- * const accounts = await getAccounts(123, {}, { page: 1, limit: 10 });
+ * * const accounts = await getAccounts(123, {}, { page: 1, limit: 10 });
  */
-
 async function getAccounts(userId, filter, pagination) {
   if (userId == null || userId <= 0) {
-    throw new "No userId provided, returning empty array"();
+    throw new Error("No userId provided, returning empty array"); // Changed from throwing a raw string
   }
   // const validatedFilter = ValidateFilter(filter); TODO: implement filter validation
   const validatedPagination = validatePagination(pagination);
@@ -32,12 +31,12 @@ async function getAccounts(userId, filter, pagination) {
     validatedPagination.page,
     validatedPagination.limit
   );
-  if (!response || response.length <= 0) {
+  if (!response || response.length <= 0) { // Check response.items or response.content if it's paginated
     throw new Error("No accounts found for userId:", userId);
   }
 
-  const fullAccounts = await enrichAccountsWithOwners(response.items);
-  response.items = fullAccounts;
+  const fullAccounts = await enrichAccountsWithOwners(response.items); // Assuming response.items contains the account array
+  response.items = fullAccounts; // Reassign the enriched items
 
   return response;
 }
@@ -91,7 +90,7 @@ async function getAllAccounts(filter, pagination) {
     validatedPagination.page,
     validatedPagination.limit
   );
-  if (!response || response.length === 0) {
+  if (!response || response.items.length === 0) { // Check response.items for length
     throw new Error("No accounts found");
   }
   const fullAccounts = await enrichAccountsWithOwners(response.items);
@@ -141,26 +140,40 @@ async function enrichAccountsWithOwners(accountObject) {
     })
   );
 }
-async function updateAccountTransactionLimit(iban, newLimit) {
+
+/**
+ * Updates the transaction limit and/or absolute limit for an account.
+ * This function now accepts an object with limitsData.
+ * @param {string} iban - The IBAN of the account to update.
+ * @param {object} limitsData - An object containing the limits to update (e.g., { transactionLimit: 1000, absoluteLimit: 5000 }).
+ * @returns {Promise<object>} The updated account data.
+ */
+async function updateAccountLimits(iban, limitsData) {
   try {
     if (!iban) {
       throw new Error("IBAN is required to update the account.");
     }
-    if (typeof newLimit !== 'number' || newLimit < 0) { // Basic validation for the new limit
+    // Validate transactionLimit if provided
+    if (limitsData.transactionLimit !== undefined && (typeof limitsData.transactionLimit !== 'number' || limitsData.transactionLimit < 0)) {
       throw new Error("New transaction limit must be a non-negative number.");
     }
 
-    // Assuming your accounts.js has an update function, e.g., accounts.updateAccount(iban, { transactionLimit: newLimit })
-    // You might need to adapt this line based on your actual backend API and queries/accounts.js implementation.
-    const updatedAccount = await accounts.updateAccount(iban, { transactionLimit: newLimit });
+    // Validate absoluteLimit if provided: must be a number and 0 or lower.
+    if (limitsData.absoluteLimit !== undefined && (typeof limitsData.absoluteLimit !== 'number' || limitsData.absoluteLimit > 0)) {
+      throw new Error("New absolute limit must be 0 or lower.");
+    }
+
+    // Call the updated accounts.updateAccount which now sends POST to /accounts/{iban}
+    const updatedAccount = await accounts.updateAccount(iban, limitsData); // Pass the limitsData object directly
 
     if (!updatedAccount) {
-      throw new Error("Failed to update account transaction limit.");
+      throw new Error("Failed to update account limits.");
     }
     return updatedAccount;
   } catch (error) {
-    console.error("Error updating account transaction limit:", error);
-    throw new Error(error.message || "Failed to update account transaction limit.");
+    console.error("Error updating account limits in service:", error);
+    // Re-throw a generic error message if the specific error message is not helpful
+    throw new Error(error.message || "Failed to update account limits.");
   }
 }
 
@@ -168,5 +181,5 @@ export default {
   getAccounts,
   getAccountByIban,
   getAllAccounts,
-  updateAccountTransactionLimit,
+  updateAccountLimits, // Export the renamed and updated function
 };

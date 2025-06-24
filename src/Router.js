@@ -82,10 +82,10 @@ const routes = [
     meta: { public: false, requiresAdmin: false, requiresVerification: false },
   },
   {
-    path: "/atm",
-    name: "ATM",
-    component: atmPage,
-    meta: { public: false, requiresAdmin: false, requiresVerification: true },
+    path: "/atmlogin",
+    name: "ATMLogin",
+    component: atmPage, // import it above
+    meta: { public: true, requiresAdmin: false, requiresVerification: false },
   },
   { path: "/atmoverview", name: "ATMOverview", component: atmOverview 
     , meta: { public: false, requiresAdmin: false, requiresVerification: true } 
