@@ -2,12 +2,12 @@
   <div>
     <h2>ATM Login</h2>
     <form @submit.prevent="submitAtmLogin">
-      <label for="username">Username</label>
+      <label for="email">Email</label>
       <input
         type="text"
-        id="username"
-        v-model="username"
-        placeholder="Enter your username"
+        id="email"
+        v-model="email"
+        placeholder="Enter your email"
         required
       />
 
@@ -31,13 +31,13 @@
 <script setup>
 import { ref } from "vue";
 
-const username = ref("");
+const email = ref("");
 const password = ref("");
 
 const emit = defineEmits(["atm-login-submitted", "switch-to-normal-login"]);
 
 function submitAtmLogin() {
-  emit("atm-login-submitted", { username: username.value, password: password.value });
+  emit("atm-login-submitted", { email: email.value, password: password.value });
 }
 </script>
 

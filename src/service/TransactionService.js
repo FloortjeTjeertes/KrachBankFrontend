@@ -156,6 +156,41 @@ async function getTransactionsByUserId(userId, pagination,filter) {
     throw new Error(e);
   }
 }
+/**
+ * Retrieves all transactions in the system, applying pagination and filters.
+ *
+ * @async
+ * @function
+ * @param {Object} pagination - Pagination options.
+ * @param {Object} [filter] - Optional filter object for transactions (e.g., sender, receiver, amount, date ranges).
+ * @returns {Promise<Object>} The paginated transactions object with enriched transaction items.
+ * @throws {Error} If no transactions are found or an error occurs during fetching.
+ */
+async function getAllTransactions(pagination, filter) {
+  try {
+    const validatedPagination = toPaginationFilter(pagination);
+
+    // This assumes your `transaction` API client has a method to fetch all transactions
+    // without a specific user ID, accepting filter and pagination parameters.
+    // You might need to implement `transaction.fetchTransactions` in your API client.
+    const transactions = await transaction.fetchTransactions(
+      filter,
+      validatedPagination.page,
+      validatedPagination.limit
+    );
+
+    if (!transactions || !transactions.items || transactions.items.length <= 0) {
+      return { items: [], currentPage: 0, totalPages: 0, totalElements: 0 };
+    }
+
+    const fullTransactions = await enrichTransactionsWithOwners(transactions.items);
+    transactions.items = fullTransactions;
+    return transactions;
+  } catch (e) {
+    console.error("Error in getAllTransactions:", e);
+    throw new Error(e.message || "Failed to fetch all transactions.");
+  }
+}
 
 /**
  * Enriches an array of transaction objects by replacing the `initiator` field
@@ -186,4 +221,5 @@ export default {
   getTransactionsForAccount,
   sendTransaction,
   getTransactionsByUserId,
+  getAllTransactions
 };

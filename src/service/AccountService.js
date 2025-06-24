@@ -143,9 +143,32 @@ async function enrichAccountsWithOwners(accountObject) {
     })
   );
 }
+async function updateAccountTransactionLimit(iban, newLimit) {
+  try {
+    if (!iban) {
+      throw new Error("IBAN is required to update the account.");
+    }
+    if (typeof newLimit !== 'number' || newLimit < 0) { // Basic validation for the new limit
+      throw new Error("New transaction limit must be a non-negative number.");
+    }
+
+    // Assuming your accounts.js has an update function, e.g., accounts.updateAccount(iban, { transactionLimit: newLimit })
+    // You might need to adapt this line based on your actual backend API and queries/accounts.js implementation.
+    const updatedAccount = await accounts.updateAccount(iban, { transactionLimit: newLimit });
+
+    if (!updatedAccount) {
+      throw new Error("Failed to update account transaction limit.");
+    }
+    return updatedAccount;
+  } catch (error) {
+    console.error("Error updating account transaction limit:", error);
+    throw new Error(error.message || "Failed to update account transaction limit.");
+  }
+}
 
 export default {
   getAccounts,
   getAccountByIban,
   getAllAccounts,
+  updateAccountTransactionLimit,
 };

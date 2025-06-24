@@ -5,13 +5,12 @@
 
     <div class="balance-display">
       <h2 v-if="loadingBalance">Loading Balance...</h2>
-      <h2 v-else-if="balanceError" class="error-message">Error: {{ balanceError }}</h2>
-      <h2 v-else>Current Balance: ${{ formattedBalance }}</h2>
+      <h2 v-else>Current Balance: &#8364{{ formattedBalance }}</h2>
     </div>
 
     <div class="main-actions" v-if="!showWithdrawOptions && !showDepositOptions">
-      <button @click="openWithdrawOptions" :disabled="loadingBalance || !!balanceError">Withdraw</button>
-      <button @click="openDepositOptions" :disabled="loadingBalance || !!balanceError">Deposit</button>
+      <button @click="openWithdrawOptions" :disabled="loadingBalance">Withdraw</button>
+      <button @click="openDepositOptions" :disabled="loadingBalance">Deposit</button>
     </div>
 
     <div v-if="showWithdrawOptions" class="transaction-options">
@@ -31,10 +30,7 @@
         </button>
         <button @click="cancelOptions" class="cancel-button" :disabled="processingTransaction">Cancel</button>
       </div>
-      <p v-if="withdrawAmount > balance && withdrawAmount !== null && withdrawAmount !== 0" class="error-message">Insufficient funds!</p>
-      <p v-if="withdrawAmount <= 0 && withdrawAmount !== null && withdrawAmount !== 0" class="error-message">Amount must be positive.</p>
-      <p v-if="transactionError" class="error-message">{{ transactionError }}</p>
-    </div>
+      </div>
 
     <div v-if="showDepositOptions" class="transaction-options">
       <h2>Deposit Funds</h2>
@@ -52,9 +48,7 @@
         </button>
         <button @click="cancelOptions" class="cancel-button" :disabled="processingTransaction">Cancel</button>
       </div>
-      <p v-if="depositAmount <= 0 && depositAmount !== null && depositAmount !== 0" class="error-message">Amount must be positive.</p>
-      <p v-if="transactionError" class="error-message">{{ transactionError }}</p>
-    </div>
+      </div>
   </div>
 </template>
 
@@ -66,9 +60,9 @@ import { useAtmService } from '../../service/AtmService.js';
 
 const toast = useToast();
 const userStore = useUserStore();
-const { fetchUserCheckingAccountDetails, processWithdrawal, processDeposit } = useAtmService(); // Use the service
+const { fetchUserCheckingAccountDetails, processWithdrawal, processDeposit } = useAtmService();
 
-// Store and reactive states
+// Removed balanceError and transactionError
 const balance = ref(0);
 const checkingAccountIban = ref(null);
 const showWithdrawOptions = ref(false);
@@ -76,9 +70,7 @@ const showDepositOptions = ref(false);
 const withdrawAmount = ref(null);
 const depositAmount = ref(null);
 const loadingBalance = ref(true);
-const balanceError = ref(null);
 const processingTransaction = ref(false);
-const transactionError = ref(null);
 
 
 const formattedBalance = computed(() => {
@@ -97,14 +89,14 @@ const isDepositAmountValid = computed(() => {
 // Functions
 async function loadBalanceAndIban() {
   loadingBalance.value = true;
-  balanceError.value = null;
+  // Removed balanceError.value = null;
   try {
     const { balance: fetchedBalance, iban: fetchedIban } = await fetchUserCheckingAccountDetails();
     balance.value = fetchedBalance;
     checkingAccountIban.value = fetchedIban;
   } catch (error) {
-    console.error("Error loading balance in component:", error);
-    balanceError.value = error.message || 'Failed to load balance.';
+    console.error("Error loading balance:", error); // Keep console log for debugging
+    toast.error(error.message || 'Failed to load balance. Please log in again.'); // Display as toast
     balance.value = 0; // Reset balance on error
     checkingAccountIban.value = null;
   } finally {
@@ -117,7 +109,7 @@ function openWithdrawOptions() {
   showDepositOptions.value = false;
   withdrawAmount.value = null;
   depositAmount.value = null;
-  transactionError.value = null;
+  // Removed transactionError.value = null;
 }
 
 function openDepositOptions() {
@@ -125,7 +117,7 @@ function openDepositOptions() {
   showWithdrawOptions.value = false;
   withdrawAmount.value = null;
   depositAmount.value = null;
-  transactionError.value = null;
+  // Removed transactionError.value = null;
 }
 
 function cancelOptions() {
@@ -133,57 +125,71 @@ function cancelOptions() {
   showDepositOptions.value = false;
   withdrawAmount.value = null;
   depositAmount.value = null;
-  transactionError.value = null;
+  // Removed transactionError.value = null;
 }
 
 async function handleWithdraw() {
-  if (!isWithdrawAmountValid.value) {
-    transactionError.value = "Please enter a valid amount to withdraw.";
+  // Centralized validation and toast display
+  if (withdrawAmount.value === null || withdrawAmount.value <= 0) {
+    toast.error("Amount must be a positive number.");
+    return;
+  }
+  if (withdrawAmount.value > balance.value) {
+    toast.error("Insufficient funds for this withdrawal!");
     return;
   }
   if (!checkingAccountIban.value) {
-    transactionError.value = "Checking account IBAN not found. Cannot process withdrawal.";
+    toast.error("Checking account IBAN not found. Cannot process withdrawal.");
     return;
   }
 
   processingTransaction.value = true;
-  transactionError.value = null;
+  // Removed transactionError.value = null;
   try {
-    await processWithdrawal(withdrawAmount.value, checkingAccountIban.value); // Call the service function
+    await processWithdrawal(withdrawAmount.value, checkingAccountIban.value);
 
     await loadBalanceAndIban(); // Reload balance after successful transaction
-    toast.success(`Successfully withdrew $${withdrawAmount.value.toFixed(2)}.`); // Correct toast message
+    toast.success(`Successfully withdrew $${withdrawAmount.value.toFixed(2)}.`);
     cancelOptions();
   } catch (error) {
-    console.error("Error during withdrawal:", error.response?.data || error.message);
-    transactionError.value = error.response?.data?.message || 'Withdrawal failed. Please try again.';
-  } finally {
+  const errorMessage =
+    error.response?.data?.message ||
+    error.message ||
+    'Withdrawal failed. Please try again.';
+  console.error("Error during withdrawal:", errorMessage);
+  toast.error(errorMessage);
+} finally {
     processingTransaction.value = false;
   }
 }
 
 async function handleDeposit() {
-  if (!isDepositAmountValid.value) {
-    transactionError.value = "Please enter a positive amount to deposit.";
+  // Centralized validation and toast display
+  if (depositAmount.value === null || depositAmount.value <= 0) {
+    toast.error("Amount must be a positive number.");
     return;
   }
   if (!checkingAccountIban.value) {
-    transactionError.value = "Checking account IBAN not found. Cannot process deposit.";
+    toast.error("Checking account IBAN not found. Cannot process deposit.");
     return;
   }
 
   processingTransaction.value = true;
-  transactionError.value = null;
+  // Removed transactionError.value = null;
   try {
-    await processDeposit(depositAmount.value, checkingAccountIban.value); // Call the service function
+    await processDeposit(depositAmount.value, checkingAccountIban.value);
 
     await loadBalanceAndIban(); // Reload balance after successful transaction
     toast.success(`Successfully deposited $${depositAmount.value.toFixed(2)}.`);
     cancelOptions();
   } catch (error) {
-    console.error("Error during deposit:", error.response?.data || error.message);
-    transactionError.value = error.response?.data?.message || 'Deposit failed. Please try again.';
-  } finally {
+  const errorMessage =
+    error.response?.data?.message ||
+    error.message ||
+    'Deposit failed. Please try again.';
+  console.error("Error during deposit:", errorMessage);
+  toast.error(errorMessage);
+ } finally {
     processingTransaction.value = false;
   }
 }
@@ -191,11 +197,11 @@ async function handleDeposit() {
 // --- Lifecycle and data fetching ---
 watch(() => userStore.getUser, (newUser) => {
   if (newUser && newUser.id) {
-    loadBalanceAndIban(); // Use the refactored load function
+    loadBalanceAndIban();
   } else if (!newUser && !loadingBalance.value) {
     balance.value = 0;
     checkingAccountIban.value = null;
-    balanceError.value = "User not logged in or ID not available.";
+    toast.error("User not logged in or ID not available. Please log in."); // Display as toast
     loadingBalance.value = false;
   }
 }, { immediate: true });
@@ -324,9 +330,5 @@ h2 {
   background-color: #e57373;
 }
 
-.error-message {
-  color: #ffb74d;
-  font-size: 0.9em;
-  margin-top: 10px;
-}
+/* Removed the .error-message style as it's no longer used for inline display */
 </style>

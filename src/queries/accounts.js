@@ -18,7 +18,13 @@ export const fetchAccounts = async (filter, page, limit) => {
 };
 // fetch a single account by ID
 export const fetchAccountByIban = async (Iban) => {
+  try{
   const response = await api.get(`/accounts/${Iban}`);
+      }
+      catch{
+        console.error(`Error fetching account with IBAN ${iban}:`, error);
+        throw error;
+      }
   return response.data;
 };
 
@@ -43,10 +49,15 @@ export const fetchAccountsForUser = async (userId, filter, page, limit) => {
   });
   return response.data;
 };
+export const updateAccount = async (iban, data) => {
+  const response = await api.post(`/accounts/${iban}/transaction-limit`, data); // <--- UPDATED LINE
+  return response.data;
+};
 
 export default {
   fetchAccounts,
   fetchAccountByIban,
   createAccount,
   fetchAccountsForUser,
+  updateAccount
 };

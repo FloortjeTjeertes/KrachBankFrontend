@@ -1,11 +1,6 @@
 <script setup>
 import { RouterView } from "vue-router";
 import AppHeader from "@/components/common/AppHeader.vue";
-
-
-
-
-
 </script>
 
 <template>
