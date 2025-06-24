@@ -9,7 +9,7 @@
       </template>
     </summary>
     <ul class="dropdown-body">
-      <input
+      <!-- <input
         type="text"
         class="dropdown-search"
         placeholder="Search accounts"
@@ -17,7 +17,7 @@
         v-model="SelectedIban"
         @oninput="getAccounts(props.userId, props.iban)"
         @keyup="getAccounts(props.userId, props.iban)"
-      />
+      /> -->
       <li class="dropdown-item" @click="setSelectedAccount(null)">
         No account
       </li>
