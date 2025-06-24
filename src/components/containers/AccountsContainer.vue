@@ -46,6 +46,7 @@ const isUpdatingAccount = ref(false); // Loading state for update operation
 
 // --- Filtered Accounts Computed Property ---
 const filteredAccounts = computed(() => {
+  // Ensure accountsData.value and accountsData.value.items are defined
   if (!accountsData.value?.items) {
     return []
   }
@@ -101,6 +102,7 @@ const filteredAccounts = computed(() => {
 // --- Handle Edit Account ---
 function handleEditAccount(account) {
   // Create a deep copy to ensure the modal doesn't directly mutate the table data
+  // This also copies existing absoluteLimit if it's present in the account object
   selectedAccount.value = JSON.parse(JSON.stringify(account));
   showEditAccountModal.value = true;
 }
@@ -110,22 +112,36 @@ function handleCloseEditModal() {
   selectedAccount.value = null;
 }
 
-// --- Handle Account Update (Transaction Limit) ---
+// --- Handle Account Update (Transaction Limit and Absolute Limit) ---
 async function handleUpdateAccount(updatedAccountData) {
   isUpdatingAccount.value = true;
   try {
-    // Call the service function to update the transaction limit
-    await AccountService.updateAccountTransactionLimit(
-      updatedAccountData.iban,
-      updatedAccountData.transactionLimit
+    // Input Validation for Absolute Limit (already implemented)
+    if (updatedAccountData.absoluteLimit !== null && updatedAccountData.absoluteLimit > 0) {
+      toast.error("Absolute limit must be 0 or lower.");
+      isUpdatingAccount.value = false;
+      return; // Stop the update process
+    }
+
+    // Construct the data payload for the service call
+    // Send both limits, even if one is unchanged, as the POST endpoint will handle it.
+    const dataToUpdate = {
+      transactionLimit: updatedAccountData.transactionLimit,
+      absoluteLimit: updatedAccountData.absoluteLimit,
+    };
+
+    // Call the AccountService.updateAccountLimits method
+    await AccountService.updateAccountLimits(
+      updatedAccountData.iban, // The IBAN to identify the account
+      dataToUpdate             // The object containing limits to update
     );
 
     showEditAccountModal.value = false; // Close the modal on success
-    await refetchAccounts(); // Refetch accounts to see the updated limit in the table
-    toast.success("Account transaction limit updated successfully!"); // Provide feedback
+    await refetchAccounts(); // Refetch accounts to see the updated limits in the table
+    toast.success("Account limits updated successfully!"); // Provide feedback
   } catch (error) {
-    console.error("Error updating account transaction limit:", error);
-    toast.error("Failed to update account: " + error.message); // Provide error feedback
+    console.error("Error updating account limits:", error);
+    toast.error("Failed to update account: " + (error.response?.data?.message || error.message)); // Provide detailed error feedback
   } finally {
     isUpdatingAccount.value = false;
   }
@@ -173,6 +189,24 @@ async function handleUpdateAccount(updatedAccountData) {
             <input id="filterMaxBalance" type="number" v-model.number="filterMaxBalance" placeholder="e.g., 1000.00" step="0.01"
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" />
           </div>
+          <!-- Filter for Active Status (Radio buttons for true/false/null) -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <div class="mt-1 flex space-x-4">
+              <label class="inline-flex items-center">
+                <input type="radio" v-model="filterActive" :value="null" class="form-radio text-blue-600">
+                <span class="ml-2 text-gray-700">All</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input type="radio" v-model="filterActive" :value="true" class="form-radio text-green-600">
+                <span class="ml-2 text-gray-700">Active</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input type="radio" v-model="filterActive" :value="false" class="form-radio text-red-600">
+                <span class="ml-2 text-gray-700">Inactive</span>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -183,18 +217,25 @@ async function handleUpdateAccount(updatedAccountData) {
     </div>
     <span v-else class="flex justify-center items-center h-full text-gray-700">No accounts or user data available.</span>
 
+    <!-- Edit Account Modal -->
     <div v-if="showEditAccountModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 relative">
         <button @click="handleCloseEditModal" class="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
-        <h3 class="text-xl font-semibold mb-4 text-gray-800">Edit Account Transaction Limit</h3>
+        <h3 class="text-xl font-semibold mb-4 text-gray-800">Edit Account Limits</h3>
         <p v-if="selectedAccount">
-          Editing limit for IBAN: <strong>{{ selectedAccount.iban }}</strong><br>
-          Current Limit: <strong>{{ selectedAccount.transactionLimit }}</strong>
+          Editing limits for IBAN: <strong>{{ selectedAccount.iban }}</strong>
         </p>
-        <div class="mt-4">
-          <label class="block text-sm font-medium mb-1">New Transaction Limit</label>
-          <input type="number" v-model.number="selectedAccount.transactionLimit"
-                 class="w-full rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <div class="mt-4 space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">New Transaction Limit</label>
+            <input type="number" v-model.number="selectedAccount.transactionLimit"
+                   class="w-full rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">New Absolute Limit</label>
+            <input type="number" v-model.number="selectedAccount.absoluteLimit"
+                   class="w-full rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
         </div>
         <div class="flex justify-end space-x-2 mt-6">
           <button @click="handleCloseEditModal" class="px-4 py-2 rounded-md bg-gray-300 hover:bg-gray-400 transition">
@@ -211,7 +252,7 @@ async function handleUpdateAccount(updatedAccountData) {
 </template>
 
 <style>
-/* You might keep global styles here if necessary, but no filter-specific styles are needed anymore */
+/* You might keep global styles here if necessary */
 .font-inter {
   font-family: 'Inter', sans-serif; /* Ensure Inter font is loaded and applied */
 }

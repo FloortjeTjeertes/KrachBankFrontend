@@ -2,7 +2,6 @@ import { toAccountFilter } from "../filters/accountFilter";
 import api from "./axios";
 
 // fetch accounts
-
 export const fetchAccounts = async (filter, page, limit) => {
   if (!filter) {
     filter = {};
@@ -16,16 +15,16 @@ export const fetchAccounts = async (filter, page, limit) => {
   });
   return response.data;
 };
-// fetch a single account by ID
+
+// fetch a single account by IBAN
 export const fetchAccountByIban = async (Iban) => {
-  try{
-  const response = await api.get(`/accounts/${Iban}`);
-      }
-      catch{
-        console.error(`Error fetching account with IBAN ${iban}:`, error);
-        throw error;
-      }
-  return response.data;
+  try {
+    const response = await api.get(`/accounts/${Iban}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching account with IBAN ${Iban}:`, error);
+    throw error;
+  }
 };
 
 // create a new account (single or batch)
@@ -49,8 +48,19 @@ export const fetchAccountsForUser = async (userId, filter, page, limit) => {
   });
   return response.data;
 };
+
+/**
+ * Updates specified fields for an account.
+ * This method now uses POST and targets the new /accounts/{iban}/limits endpoint.
+ * Your backend must be configured to handle POST requests to this endpoint for updates.
+ * @param {string} iban - The IBAN of the account to update.
+ * @param {object} data - An object containing the fields to update (e.g., { transactionLimit: 1000, absoluteLimit: 5000 }).
+ * @returns {Promise<object>} The updated account data.
+ */
 export const updateAccount = async (iban, data) => {
-  const response = await api.post(`/accounts/${iban}/transaction-limit`, data); // <--- UPDATED LINE
+  // Endpoint path to match the new backend controller mapping.
+  // Ensure your backend's /accounts/{iban}/limits endpoint expects a POST for updates.
+  const response = await api.post(`/accounts/${iban}/limits`, data);
   return response.data;
 };
 
@@ -59,5 +69,5 @@ export default {
   fetchAccountByIban,
   createAccount,
   fetchAccountsForUser,
-  updateAccount
+  updateAccount, // Export the updated updateAccount
 };
