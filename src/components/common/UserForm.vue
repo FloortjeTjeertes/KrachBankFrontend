@@ -123,15 +123,15 @@ const updateUserMutation = useMutation({
       // Maak direct na verificatie de accounts aan met een enkele request (array van accounts)
       await createAccount([
         {
-          balance: 1000.0,
-          absoluteLimit: -100.0,
-          transactionLimit: 500.0,
+          balance: 0.0,
+          absoluteLimit: transferLimit,
+          dailyLimit: dailyLimit,
           userId: String(variables.userId)
         },
         {
-          balance: 2000.0,
-          absoluteLimit: -200.0,
-          transactionLimit: 1000.0,
+          balance: 0.0,
+          absoluteLimit: transferLimit,
+          dailyLimit: dailyLimit,
           userId: String(variables.userId)
         }
       ]);
