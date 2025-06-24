@@ -60,12 +60,10 @@ async function getAccountByIban(iban) {
       throw new Error("No account found for the provided IBAN");
     }
 
-    const owner = await UserService.getUserById(response.owner);
-    if (!owner) {
-      throw new Error("Owner not found for the account");
-    }
+    const fullAccounts = await enrichAccountsWithOwners([response]);
 
-    return { ...response, owner };
+    response.items = fullAccounts[0]; // Assuming response is an object with items property
+    return response;
   } catch (error) {
     console.error(error);
     throw error; // Re-throw the error for further handling

@@ -18,13 +18,14 @@ export const fetchAccounts = async (filter, page, limit) => {
 
 // fetch a single account by IBAN
 export const fetchAccountByIban = async (Iban) => {
-  try {
     const response = await api.get(`/accounts/${Iban}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching account with IBAN ${Iban}:`, error);
-    throw error;
+
+  if (!response || !response.data) {
+    throw new Error(`Error fetching account with IBAN ${Iban}:`);
   }
+  
+  return response.data;
+
 };
 
 // create a new account (single or batch)
