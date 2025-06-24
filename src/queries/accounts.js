@@ -49,10 +49,15 @@ export const fetchAccountsForUser = async (userId, filter, page, limit) => {
   });
   return response.data;
 };
+export const updateAccount = async (iban, data) => {
+  const response = await api.post(`/accounts/${iban}/transaction-limit`, data); // <--- UPDATED LINE
+  return response.data;
+};
 
 export default {
   fetchAccounts,
   fetchAccountByIban,
   createAccount,
-  fetchAccountsForUser
+  fetchAccountsForUser,
+  updateAccount
 };
