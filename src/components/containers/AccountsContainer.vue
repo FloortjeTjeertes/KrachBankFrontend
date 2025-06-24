@@ -2,12 +2,13 @@
 import { ref, computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import AccountTable from '../common/AccountTable.vue'
-import { fetchAccounts } from '../../queries/accounts.js' // Assuming this is correct for initial fetch
+import { fetchAccounts } from '../../queries/accounts.js'
 import { fetchUsers } from '../../queries/users.js'
-import AccountService from '../../service/AccountService.js'; // Import the AccountService
-import { useToast } from "vue-toastification";
-const toast = useToast();
+import AccountService from '../../service/AccountService.js'
+import { useToast } from 'vue-toastification'
+import EditAccountModal from '../common/EditAccountModal.vue'
 
+const toast = useToast()
 
 // Fetch accounts and users
 const { data: accountsData, isLoading: loadingAccounts, refetch: refetchAccounts } = useQuery({
@@ -20,7 +21,7 @@ const { data: usersArray, isLoading: loadingUsers } = useQuery({
   queryFn: () => fetchUsers()
 })
 
-// Build a map from user ID to email
+// Build email map
 const ownerEmailMap = computed(() => {
   const map = {}
   if (usersArray.value) {
@@ -34,209 +35,151 @@ const ownerEmailMap = computed(() => {
 // --- Filter State ---
 const filterIban = ref('')
 const filterOwnerEmail = ref('')
-const filterType = ref('') // 'SAVINGS', 'CHECKING', or '' for all
+const filterType = ref('')
 const filterMinBalance = ref(null)
 const filterMaxBalance = ref(null)
-const filterActive = ref(null) // null for all, true for active, false for inactive
+const filterActive = ref(null)
 
-// --- Edit Account Modal State ---
-const showEditAccountModal = ref(false);
-const selectedAccount = ref(null); // To hold the account being edited
-const isUpdatingAccount = ref(false); // Loading state for update operation
+// --- Edit Modal State ---
+const selectedAccount = ref(null)
+const isUpdatingAccount = ref(false)
+const showEditModal = ref(false)
 
-// --- Filtered Accounts Computed Property ---
+// --- Filtered Accounts ---
 const filteredAccounts = computed(() => {
-  // Ensure accountsData.value and accountsData.value.items are defined
-  if (!accountsData.value?.items) {
-    return []
-  }
-
+  if (!accountsData.value?.items) return []
   let filtered = accountsData.value.items
 
-  // 1. Filter by IBAN
   if (filterIban.value) {
-    const searchIban = filterIban.value.toLowerCase()
-    filtered = filtered.filter(account =>
-      account.iban.toLowerCase().includes(searchIban)
-    )
+    const search = filterIban.value.toLowerCase()
+    filtered = filtered.filter(acc => acc.iban.toLowerCase().includes(search))
   }
 
-  // 2. Filter by Owner Email
   if (filterOwnerEmail.value) {
-    const searchEmail = filterOwnerEmail.value.toLowerCase()
-    filtered = filtered.filter(account => {
-      const ownerEmail = ownerEmailMap.value[account.owner] || ''
-      return ownerEmail.toLowerCase().includes(searchEmail)
+    const search = filterOwnerEmail.value.toLowerCase()
+    filtered = filtered.filter(acc => {
+      const email = ownerEmailMap.value[acc.owner] || ''
+      return email.toLowerCase().includes(search)
     })
   }
 
-  // 3. Filter by Account Type
   if (filterType.value) {
-    filtered = filtered.filter(account => account.type === filterType.value)
+    filtered = filtered.filter(acc => acc.type === filterType.value)
   }
 
-  // 4. Filter by Minimum Balance
   if (filterMinBalance.value !== null && filterMinBalance.value !== '') {
     const min = parseFloat(filterMinBalance.value)
     if (!isNaN(min)) {
-      filtered = filtered.filter(account => account.balance >= min)
+      filtered = filtered.filter(acc => acc.balance >= min)
     }
   }
 
-  // 5. Filter by Maximum Balance
   if (filterMaxBalance.value !== null && filterMaxBalance.value !== '') {
     const max = parseFloat(filterMaxBalance.value)
     if (!isNaN(max)) {
-      filtered = filtered.filter(account => account.balance <= max)
+      filtered = filtered.filter(acc => acc.balance <= max)
     }
   }
 
-  // 6. Filter by Active Status
-  if (filterActive.value !== null) { // Only filter if explicitly true or false
-    filtered = filtered.filter(account => account.active === filterActive.value)
+  if (filterActive.value !== null) {
+    filtered = filtered.filter(acc => acc.active === filterActive.value)
   }
 
   return filtered
 })
 
-// --- Handle Edit Account ---
+// --- Edit Modal Actions ---
 function handleEditAccount(account) {
-  // Create a deep copy to ensure the modal doesn't directly mutate the table data
-  // This also copies existing absoluteLimit if it's present in the account object
-  selectedAccount.value = JSON.parse(JSON.stringify(account));
-  showEditAccountModal.value = true;
+  selectedAccount.value = JSON.parse(JSON.stringify(account))
+  showEditModal.value = true
 }
 
 function handleCloseEditModal() {
-  showEditAccountModal.value = false;
-  selectedAccount.value = null;
+  showEditModal.value = false
+  selectedAccount.value = null
 }
 
-// --- Handle Account Update (Transaction Limit and Absolute Limit) ---
 async function handleUpdateAccount(updatedAccountData) {
-  isUpdatingAccount.value = true;
+  isUpdatingAccount.value = true
   try {
-    // Input Validation for Absolute Limit (already implemented)
     if (updatedAccountData.absoluteLimit !== null && updatedAccountData.absoluteLimit > 0) {
-      toast.error("Absolute limit must be 0 or lower.");
-      isUpdatingAccount.value = false;
-      return; // Stop the update process
+      toast.error("Absolute limit must be 0 or lower.")
+      isUpdatingAccount.value = false
+      return
     }
 
-    // Construct the data payload for the service call
-    // Send both limits, even if one is unchanged, as the POST endpoint will handle it.
-    const dataToUpdate = {
+    const payload = {
       transactionLimit: updatedAccountData.transactionLimit,
       absoluteLimit: updatedAccountData.absoluteLimit,
-    };
+    }
 
-    // Call the AccountService.updateAccountLimits method
-    await AccountService.updateAccountLimits(
-      updatedAccountData.iban, // The IBAN to identify the account
-      dataToUpdate             // The object containing limits to update
-    );
-
-    showEditAccountModal.value = false; // Close the modal on success
-    await refetchAccounts(); // Refetch accounts to see the updated limits in the table
-    toast.success("Account limits updated successfully!"); // Provide feedback
+    await AccountService.updateAccountLimits(updatedAccountData.iban, payload)
+    await refetchAccounts()
+    handleCloseEditModal()
+    toast.success("Account limits updated successfully!")
   } catch (error) {
-    console.error("Error updating account limits:", error);
-    toast.error("Failed to update account: " + (error.response?.data?.message || error.message)); // Provide detailed error feedback
+    console.error("Error updating account:", error)
+    toast.error("Failed to update account: " + (error.response?.data?.message || error.message))
   } finally {
-    isUpdatingAccount.value = false;
+    isUpdatingAccount.value = false
   }
 }
 </script>
 
 <template>
-  <div class="p-4 bg-gray-50 min-h-screen font-inter">
-    <span v-if="loadingAccounts || loadingUsers" class="flex justify-center items-center h-full text-gray-700">Loading accounts and user data...</span>
+  <main class="container">
+    <section v-if="loadingAccounts || loadingUsers">
+      <p>Loading accounts and users...</p>
+    </section>
 
-    <div v-else-if="accountsData?.items && Object.keys(ownerEmailMap).length > 0">
-      <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h3 class="text-xl font-semibold mb-4 text-gray-800">Filter Accounts</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div>
-            <label for="filterIban" class="block text-sm font-medium text-gray-700 mb-1">IBAN</label>
-            <input id="filterIban" type="text" v-model="filterIban" placeholder="e.g., NLXXKRCHXXXXXXXXXX"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" />
-          </div>
+    <section v-else-if="accountsData?.items && Object.keys(ownerEmailMap).length > 0">
+      <h2>Filter Accounts</h2>
+      <div class="grid">
+        <label>
+          IBAN
+          <input type="text" v-model="filterIban" placeholder="e.g. NLXX..." />
+        </label>
 
-          <div>
-            <label for="filterOwnerEmail" class="block text-sm font-medium text-gray-700 mb-1">Owner Email</label>
-            <input id="filterOwnerEmail" type="text" v-model="filterOwnerEmail" placeholder="e.g., example@email.com"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" />
-          </div>
+        <label>
+          Owner Email
+          <input type="text" v-model="filterOwnerEmail" placeholder="e.g. user@mail.com" />
+        </label>
 
-          <div>
-            <label for="filterType" class="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
-            <select id="filterType" v-model="filterType"
-                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
-              <option value="">All Types</option>
-              <option value="SAVINGS">SAVINGS</option>
-              <option value="CHECKING">CHECKING</option>
-            </select>
-          </div>
+        <label>
+          Account Type
+          <select v-model="filterType">
+            <option value="">All</option>
+            <option value="SAVINGS">SAVINGS</option>
+            <option value="CHECKING">CHECKING</option>
+          </select>
+        </label>
 
-          <div>
-            <label for="filterMinBalance" class="block text-sm font-medium text-gray-700 mb-1">Min Balance</label>
-            <input id="filterMinBalance" type="number" v-model.number="filterMinBalance" placeholder="e.g., 0.00" step="0.01"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" />
-          </div>
+        <label>
+          Min Balance
+          <input type="number" v-model.number="filterMinBalance" placeholder="0.00" step="0.01" />
+        </label>
 
-          <div>
-            <label for="filterMaxBalance" class="block text-sm font-medium text-gray-700 mb-1">Max Balance</label>
-            <input id="filterMaxBalance" type="number" v-model.number="filterMaxBalance" placeholder="e.g., 1000.00" step="0.01"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" />
-          </div>
-          
-        </div>
+        <label>
+          Max Balance
+          <input type="number" v-model.number="filterMaxBalance" placeholder="1000.00" step="0.01" />
+        </label>
       </div>
 
       <AccountTable
         :accounts="filteredAccounts"
         :ownerEmailMap="ownerEmailMap"
         @editAccount="handleEditAccount" />
-    </div>
-    <span v-else class="flex justify-center items-center h-full text-gray-700">No accounts or user data available.</span>
+    </section>
 
-    <!-- Edit Account Modal -->
-    <div v-if="showEditAccountModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 relative">
-        <button @click="handleCloseEditModal" class="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
-        <h3 class="text-xl font-semibold mb-4 text-gray-800">Edit Account Limits</h3>
-        <p v-if="selectedAccount">
-          Editing limits for IBAN: <strong>{{ selectedAccount.iban }}</strong>
-        </p>
-        <div class="mt-4 space-y-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">New Transaction Limit</label>
-            <input type="number" v-model.number="selectedAccount.transactionLimit"
-                   class="w-full rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">New Absolute Limit</label>
-            <input type="number" v-model.number="selectedAccount.absoluteLimit"
-                   class="w-full rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-        </div>
-        <div class="flex justify-end space-x-2 mt-6">
-          <button @click="handleCloseEditModal" class="px-4 py-2 rounded-md bg-gray-300 hover:bg-gray-400 transition">
-            Cancel
-          </button>
-          <button @click="handleUpdateAccount(selectedAccount)" :disabled="isUpdatingAccount"
-                  class="px-6 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed">
-            {{ isUpdatingAccount ? 'Updating...' : 'Save Changes' }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+    <p v-else>No account data found.</p>
+
+    <!-- Use new EditAccountModal component -->
+    <EditAccountModal
+      :show="showEditModal"
+      :accountData="selectedAccount"
+      :loading="isUpdatingAccount"
+      @close="handleCloseEditModal"
+      @submit="handleUpdateAccount"
+    />
+  </main>
 </template>
-
-<style>
-/* You might keep global styles here if necessary */
-.font-inter {
-  font-family: 'Inter', sans-serif; /* Ensure Inter font is loaded and applied */
-}
-</style>
