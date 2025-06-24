@@ -41,6 +41,19 @@ async function getUserByName(fullName) {
   }
 }
 
+async function getAllUsers( ) {
+  try {
+    const response = await users.fetchUsers();
+    if (response) {
+      return response;
+    } else {
+      console.warn("No user data found");
+    }
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+  }
+}
+
 /**
  * Converts a full name string into an object with firstName and lastName properties.
  *
@@ -58,4 +71,5 @@ function nameToNameObject(nameString) {
 export default {
   getUserById,
   getUserByName,
+  getAllUsers
 };

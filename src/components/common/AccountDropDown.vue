@@ -1,9 +1,13 @@
 <template>
   <details class="dropdown" @click="handleClick">
     <summary class="dropdown-header">
-      <SmallAccount class="dropdown-account" :account="SelectedAccount" />
+      <template v-if="!SelectedAccount">
+        <span>No account of selected</span>
+      </template>
+      <template v-else>
+        <SmallAccount class="dropdown-account" :account="SelectedAccount" />
+      </template>
     </summary>
-    {{ userId }}
     <ul class="dropdown-body">
       <input
         type="text"
@@ -11,12 +15,15 @@
         placeholder="Search accounts"
         aria-label="Search accounts"
         v-model="SelectedIban"
-        @oninput="getAccounts"
-        @keyup="getAccounts"
+        @oninput="getAccounts(props.userId, props.iban)"
+        @keyup="getAccounts(props.userId, props.iban)"
       />
+      <li class="dropdown-item" @click="setSelectedAccount(null)">
+        No account
+      </li>
       <li
         v-for="account in FilteredAccounts"
-        :key="account.iban"
+        :key="account.IBAN"
         class="dropdown-item"
         @click="setSelectedAccount(account)"
       >
@@ -47,85 +54,68 @@ const props = defineProps({
     default: 0,
   },
 });
-const placeholderAccount = {
-  owner: {
-    id: 0,
-    name: "placeholderUserName",
-    firstName: "placeholder",
-    lastName: "placeholder",
-  },
-  balance: 0,
-  iban: "0000000000000000000000",
-  type: "CHECKING",
-};
 
-const SelectedAccount = ref(placeholderAccount);
-const FilteredAccounts = ref([
-  {
-    owner: {
-      id: 0,
-      name: "placeholderUserName",
-      firstName: "placeholder",
-      lastName: "placeholder",
-    },
-    balance: 0,
-    iban: "0000000000000000000000",
-    type: {
-      name: "CHECKING",
-      img: "",
-    },
-  },
-]);
+const SelectedAccount = ref(props.modelValue);
+const FilteredAccounts = ref([]);
 
 onMounted(async () => {
   SelectedIban.value = props.iban;
-  FilteredAccounts.value = await getAccounts();
+  FilteredAccounts.value = await getAccounts(props.userId, props.iban);
   if (!FilteredAccounts.value) {
     console.warn("No accounts found for the given user or IBAN.");
     return;
   }
-  // setSelectedAccount(FilteredAccounts.value[0]);
 });
-
-async function getAccounts() {
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    SelectedAccount.value = newVal;
+  }
+);
+watch(
+  () => props.userId,
+  (newVal) => {
+    console.log("User ID changed:", newVal);
+    SelectedAccount.value = null; // Reset selected account when searching
+    emit("update:modelValue", null); // Emit null to clear the selected account
+  }
+);
+async function getAccounts(userId, iban) {
   try {
-    if (
-      !props.userId &&
-      props.userId < 0 &&
-      !props.iban &&
-      props.iban.trim() === ""
-    ) {
-      throw new Error("Invalid user ID or IBAN provided.");
+    var accounts = null;
+    console.log(userId, iban);
+    if ((userId && userId > 0) || iban) {
+      accounts = await getFilteredAccountsForUser(userId, iban);
+    } else {
+      accounts = await getAllAccounts(); // Fetch all accounts if no userId or iban is provided
     }
-    const accounts = await getFilteredAccountsForUser(props.userId, props.iban);
     return accounts || [];
   } catch (error) {
     console.error("Error in getAccounts:", error);
     return [];
   }
 }
-// async function getAllAccounts() {
-//   try {
-//     const accounts = await AccountService.getAllAccounts(); //TODO: make a method to get all accounts for a user
-//     if (!accounts || accounts.length === 0) {
-//       console.warn("No accounts found.");
-//       return [];
-//     }
-//     const items = accounts.items;
-//     if (!items) {
-//       throw new Error("No items found in the response.");
-//     }
-//     console.log("all Accounts fetched successfully:", items);
-//     return items.map((account) => mapToAccount(account));
-//   } catch (error) {
-//     console.error("Error fetching accounts:", error);
-//   }
-// }
+async function getAllAccounts() {
+  try {
+    const accounts = await AccountService.getAllAccounts(); //TODO: make a method to get all accounts for a user
+    if (!accounts || accounts.length === 0) {
+      console.warn("No accounts found.");
+      return [];
+    }
+    const items = accounts.items;
+    if (!items) {
+      throw new Error("No items found in the response.");
+    }
+    console.log("all Accounts fetched successfully:", items);
+    return items.map((account) => mapToAccount(account));
+  } catch (error) {
+    console.error("Error fetching accounts:", error);
+  }
+}
 async function handleClick() {
-  FilteredAccounts.value = await getAccounts();
+  FilteredAccounts.value = await getAccounts(props.userId, props.iban);
 }
 
-//tODO: maybe combine behavior of getFilteredAccountsForUser and getAllAccounts
 async function getFilteredAccountsForUser(userId, Iban) {
   try {
     if (!userId || userId <= 0) {
@@ -144,19 +134,14 @@ async function getFilteredAccountsForUser(userId, Iban) {
     console.error("Error fetching accounts:", error);
   }
 }
-watch(
-  () => props.modelValue,
-  (newVal) => {
-    SelectedAccount.value = newVal;
-  }
-);
 
 function setSelectedAccount(account) {
   if (account && account.IBAN) {
     SelectedAccount.value = account;
     emit("update:modelValue", account); // Emit the selected account
   } else {
-    console.warn("Invalid account selected:", account);
+    SelectedAccount.value = null;
+    emit("update:modelValue", null);
   }
 }
 </script>

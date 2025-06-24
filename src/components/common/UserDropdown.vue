@@ -1,10 +1,12 @@
 <template>
   <details class="dropdown" @click="getAccounts">
     <summary class="dropdown-header">
-      <!-- <SmallUser class="dropdown-account" :account="SelectedAccount" /> -->
-
-      {{ selectedUser.firstName }} {{ selectedUser.lastName }}
+      <span v-if="selectedUser == null">No user selected</span>
+      <span v-else
+        >{{ selectedUser.firstName }} {{ selectedUser.lastName }}</span
+      >
     </summary>
+     
     <ul class="dropdown-body">
       <input
         type="text"
@@ -12,27 +14,26 @@
         placeholder="Search accounts"
         aria-label="Search accounts"
         v-model="userName"
-        @oninput="getUser(userName)"
-        @keyup="getUser(userName)"
+        @input="handleUserInputFields(userName)"
+        @keyup="handleUserInputFields(userName)"
       />
+      <div class="dropdown-list">
+      <li class="dropdown-item" @click="clearUser()">No user</li>
       <li
         v-for="user in filteredUsers"
         :key="user.Id"
         class="dropdown-item"
-        @click="setSelectedUse(user)"
+        @click="setSelectedUser(user)"
       >
-        <!--TODO: maybe make this into an cutom component -->
-        <div clas="user">
-          {{ user.firstName }} {{ user.lastName }}
-        </div>
+        <div class="user">{{ user.firstName }} {{ user.lastName }}</div>
       </li>
+      </div>
     </ul>
   </details>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-// import SmallAccount from "@/components/containers/SmallAccountContainer.vue";
+import { ref, watch, onMounted } from "vue";
 import UserService from "@/service/UserService.js";
 
 const props = defineProps({
@@ -41,7 +42,7 @@ const props = defineProps({
     required: false,
   },
 });
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(["update:modelValue"]);
 const filteredUsers = ref([]);
 const userName = ref("John Doe");
 const name = {
@@ -49,11 +50,8 @@ const name = {
   lastName: "Doe",
 };
 
-emit("update:modelValue", {
-  id: 0,
-  name: "placeholderUserName",
-  firstName: "placeholder",
-  lastName: "placeholder",
+onMounted(() => {
+  emit("update:modelValue", null); // Initialize with no user selected
 });
 
 watch(userName, (newValue) => {
@@ -72,30 +70,60 @@ const selectedUser = ref({
   lastName: "placeholder",
 });
 
+async function handleUserInputFields() {
+  if (userName.value) {
+    filteredUsers.value = await getUser(userName.value);
+  } else {
+    filteredUsers.value = await getAllUsers();
+  }
+}
+
 async function getUser(Name) {
   try {
     const response = await UserService.getUserByName(Name);
 
-    if (response) {
-      filteredUsers.value = response;
-
-    } else {
+    if (!response) {
       console.warn("No user data found:", props.userId);
     }
+    return response;
   } catch (error) {
     console.error("Error fetching user data:", error);
   }
 }
 
-function setSelectedUse(User) {
-  if (!User && !User.id) {
+async function getAllUsers() {
+  try {
+    const response = await UserService.getAllUsers();
+    if (!response) {
+      console.warn("No user data found");
+    }
+    return response;
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+  }
+}
+
+function clearUser() {
+  userName.value = "";
+  filteredUsers.value = [];
+  selectedUser.value = null; // Reset selected user
+  emit("update:modelValue", null); // Emit null to clear the selected user
+}
+
+function setSelectedUser(User) {
+  if (User == null || !User || !User.id) {
     throw new Error("Invalid user selected");
   }
   selectedUser.value = User;
   emit("update:modelValue", User); // Emit the selected user
 }
-
-
 </script>
 
-<style lang="css" scoped></style>
+<style lang="css" scoped>
+.dropdown-body {
+  min-height: 1;
+  max-height: 350% !important;      /* Set your desired max height */
+  overflow-y: auto;       /* Enable vertical scrolling */
+}
+
+</style>
